@@ -32,7 +32,7 @@ module.exports = (on, config) => {
 		var install_sql = sql_path + '/install.sql';
 		var data_sql = sql_path + '/install_data.sql';
 
-		if(advanced_user_info === "true"){
+		if(advanced_user_info === true){
 			var user_sql = seeds_location + '/user_info/advanced.sql';
 		} else {
 			var user_sql=`${seeds_location}/user_info/standard.sql`
@@ -50,6 +50,9 @@ module.exports = (on, config) => {
 		shell.rm(structure_and_data_file);
 
 		//CREATE NEW STRUCTURE AND DATA FILE FROM REDCAP SOURCE
+		shell.ls(`${sql_path}/upgrade*.sql`).forEach(function (file) {
+			shell.cat(file).to(structure_and_data_file);
+		});
 		shell.cat(db_prefix_sql).to(structure_and_data_file);
 		shell.cat(install_sql).toEnd(structure_and_data_file);
 		shell.cat(data_sql).toEnd(structure_and_data_file);
