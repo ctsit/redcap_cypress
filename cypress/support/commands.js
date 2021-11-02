@@ -8,9 +8,29 @@ import './projects/commands'
 import compareVersions from 'compare-versions';
 import 'cypress-iframe';
 const shell = require('shelljs')
+const camelToSnakeCase = str => str.toLowerCase().replaceAll(/\s/g, letter => '_');
 
 // Commands in this file are CRUCIAL and are an embedded part of the REDCap Cypress Framework.
 // They are very stable and do not change often, if ever
+
+Cypress.Commands.add('ui_login', () => {
+    let user = window.user_info.get_current_user()
+    let pass = window.user_info.get_current_pass()
+
+    let user_type = window.user_info.get_user_type()
+    let previous_user_type = window.user_info.get_previous_user_type()
+
+    console.log('User Type Change to ' + user_type + '.')
+    console.log('previous: ' + previous_user_type)
+    console.log('current: ' + user_type)
+
+    cy.visit("")
+    cy.get('#username').type(user)
+    cy.get('#password').type(pass)
+    cy.get('#login_btn').click()
+
+    window.user_info.set_previous_user_type()
+})
 
 Cypress.Commands.add('login', (options) => {
 
@@ -230,6 +250,35 @@ Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix 
             return $a[0]
         })        
       })
+})
+
+// Search for and enable an external module
+Cypress.Commands.add('searchAndEnableModule', moduleName => {
+    cy.searchForModule(moduleName);
+    cy.getDisabledModuleTableEntry(moduleName);
+    cy.enableModule(moduleName);
+})
+
+/// Search for module in the search bar
+Cypress.Commands.add('searchForModule', moduleName => {
+    cy.get('button').contains($text).click()
+    cy.get("#disabled-modules-search").type(moduleName);
+})
+
+/// Attempt to get the disabled module table entry
+Cypress.Commands.add('getDisabledModuleTableEntry', moduleName => {
+    cy.get('#external-modules-disabled-table td').contains(moduleName)
+})
+
+/// Attempt to get the enabled module table entry
+Cypress.Commands.add('getEnabledModuleTableEntry', moduleName => {
+    cy.get('#external-modules-enabled div.external-modules-title').contains(moduleName)
+})
+
+/// Attempt to enable a module
+Cypress.Commands.add('enableModule', moduleName => {
+    cy.get(`#external-modules-disabled-table tr[data-module=${camelToSnakeCase(moduleName)}] button.btn-success`).click()
+    cy.get('div.modal-footer > button.enable-button').click()
 })
 
 Cypress.Commands.add('select_text_by_label', ($name, $value) => {   
