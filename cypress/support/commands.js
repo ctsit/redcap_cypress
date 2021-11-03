@@ -261,7 +261,7 @@ Cypress.Commands.add('searchAndEnableModule', moduleName => {
 
 /// Search for module in the search bar
 Cypress.Commands.add('searchForModule', moduleName => {
-    cy.get('button').contains($text).click()
+    cy.get('button').contains('Enable a module').click()
     cy.get("#disabled-modules-search").type(moduleName);
 })
 
