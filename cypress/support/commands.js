@@ -44,7 +44,7 @@ Cypress.Commands.add('login', (options) => {
             'username': options['username'],
             'password': options['password'],
             'submitted': 1,
-            'redcap_login_a38us_09i85':'redcap_login_a38us_09i85'
+            'redcap_login_a38us_09i85': 'redcap_login_a38us_09i85'
         }
     }).should(($a) => {
         expect($a.status).to.equal(200)
@@ -56,8 +56,8 @@ Cypress.Commands.add('visit_version', (options) => {
     let version = Cypress.env('redcap_version')
 
     cy.maintain_login().then(() => {
-        if('params' in options){
-            cy.visit('/redcap_v' + version + '/' + options['page'] +  '?' + options['params'])
+        if ('params' in options) {
+            cy.visit('/redcap_v' + version + '/' + options['page'] + '?' + options['params'])
         } else {
             cy.visit('/redcap_v' + version + '/' + options['page'])
         }
@@ -66,26 +66,26 @@ Cypress.Commands.add('visit_version', (options) => {
 
 Cypress.Commands.add('visit_base', (options) => {
     cy.maintain_login().then(() => {
-        if ('url' in options) cy.visit(options['url']) 
+        if ('url' in options) cy.visit(options['url'])
     })
 })
 
-Cypress.Commands.add('base_db_seed', () => {    
+Cypress.Commands.add('base_db_seed', () => {
 
     let redcap_source_path = Cypress.env('redcap_source_path')
 
-    if(redcap_source_path === undefined){
+    if (redcap_source_path === undefined) {
         alert('redcap_source_path, which defines where your REDCap source code exists, is missing in cypress.env.json.  Please configure it before proceeding.')
     }
 
-    cy.task('populateStructureAndData', {   
-                                            redcap_version: Cypress.env('redcap_version'), 
-                                            advanced_user_info: compareVersions.compare(Cypress.env('redcap_version'), '10.1.0', '>='), 
-                                            source_location: redcap_source_path
-                                        }).then((structure_and_data_file_exists) => {
+    cy.task('populateStructureAndData', {
+        redcap_version: Cypress.env('redcap_version'),
+        advanced_user_info: compareVersions.compare(Cypress.env('redcap_version'), '10.1.0', '>='),
+        source_location: redcap_source_path
+    }).then((structure_and_data_file_exists) => {
 
         //Only run this block if the Structure and Data File exists and has gone through proper processes
-        if(structure_and_data_file_exists){
+        if (structure_and_data_file_exists) {
 
             //Create the database if it doesn't exist
             cy.mysql_db('create_database', '', false).then(() => {
@@ -93,7 +93,7 @@ Cypress.Commands.add('base_db_seed', () => {
                 //Pull in the structure and data from REDCap Source
                 cy.mysql_db('structure_and_data', window.base_url).then(() => {
 
-                    if(Cypress.env('redcap_hooks_path') !== undefined){
+                    if (Cypress.env('redcap_hooks_path') !== undefined) {
                         const redcap_hooks_path = "REDCAP_HOOKS_PATH/" + Cypress.env('redcap_hooks_path').replace(/\//g, "\\/");
                         cy.mysql_db('hooks_config', redcap_hooks_path) //Fetch the hooks SQL seed data
                     }
@@ -102,12 +102,12 @@ Cypress.Commands.add('base_db_seed', () => {
                     cy.clearCookies()
                 })
 
-            })          
+            })
 
         } else {
             alert('Warning: Error generating structure and data file.  This usually happpens because your REDCap source code is missing files.')
         }
-     
+
     })
 })
 
@@ -122,28 +122,28 @@ Cypress.Commands.add('maintain_login', () => {
     console.log('previous: ' + previous_user_type)
     console.log('current: ' + user_type)
 
-    if(user_type === previous_user_type){
+    if (user_type === previous_user_type) {
         cy.getCookies()
-          .should((cookies) => {
+            .should((cookies) => {
 
-            //In most cases, we'll have cookies to preserve to maintain a login
-            if (cookies.length > 0){
-                console.log('Cookie Login')
-                cookies.map(cookie =>  Cypress.Cookies.preserveOnce(cookie['name']) )
+                //In most cases, we'll have cookies to preserve to maintain a login
+                if (cookies.length > 0) {
+                    console.log('Cookie Login')
+                    cookies.map(cookie => Cypress.Cookies.preserveOnce(cookie['name']))
 
-            //But, if we don't, then let's simply re-login, right?    
-            } else {     
-                console.log('Regular Login')
-                cy.login({ username: user, password: pass })
-            }         
-            
-        })  
+                    //But, if we don't, then let's simply re-login, right?    
+                } else {
+                    console.log('Regular Login')
+                    cy.login({ username: user, password: pass })
+                }
 
-    //If user type has changed, let's clear cookies and login again
+            })
+
+        //If user type has changed, let's clear cookies and login again
     } else {
         //Ensure we logout when a user changes
         cy.visit('/redcap_v' + Cypress.env('redcap_version') + '/index.php?logout=1')
-        cy.login({ username: user, password:  pass })
+        cy.login({ username: user, password: pass })
     }
 
     window.user_info.set_previous_user_type()
@@ -154,7 +154,7 @@ Cypress.Commands.add('set_user_type', (user_type) => {
 })
 
 Cypress.Commands.add('set_user_info', (users) => {
-    if(users !== undefined){
+    if (users !== undefined) {
         window.user_info.set_users(users)
     } else {
         alert('users, which defines what users are in your seed database, is missing from cypress.env.json.  Please configure it before proceeding.')
@@ -163,69 +163,69 @@ Cypress.Commands.add('set_user_info', (users) => {
 
 
 Cypress.Commands.add('mysql_db', (type, replace = '', include_db_name = true) => {
-    
+
     const mysql = Cypress.env("mysql")
 
     let version = Cypress.env('redcap_version')
 
-    if(version === undefined){
+    if (version === undefined) {
         alert('redcap_version, which defines what version of REDCap you use in the seed database, is missing from cypress.env.json.  Please configure it before proceeding.')
     }
 
     //Create the MySQL Installation
-    cy.task('generateMySQLCommand', {   
-                                mysql_name: mysql['path'],
-                                host: mysql['host'],
-                                port: mysql['port'],
-                                db_name: mysql['db_name'],
-                                db_user: mysql['db_user'],
-                                db_pass: mysql['db_pass'],
-                                type: type, 
-                                replace: replace,
-                                include_db_name: include_db_name
-                              }).then((mysql_cli) => {
-                                    
-                                    //Execute the MySQL Command
-                                    cy.exec(mysql_cli['cmd'], { timeout: 100000}).then((data_import) => {
-                                        expect(data_import['code']).to.eq(0)
+    cy.task('generateMySQLCommand', {
+        mysql_name: mysql['path'],
+        host: mysql['host'],
+        port: mysql['port'],
+        db_name: mysql['db_name'],
+        db_user: mysql['db_user'],
+        db_pass: mysql['db_pass'],
+        type: type,
+        replace: replace,
+        include_db_name: include_db_name
+    }).then((mysql_cli) => {
 
-                                        //Clean up after ourselves    
-                                        cy.task('deleteFile', { path: mysql_cli['tmp'] }).then((deleted_tmp_file) => {
-                                            expect(deleted_tmp_file).to.eq(true)                                         
-                                        })
-                                    })
-                              })
+        //Execute the MySQL Command
+        cy.exec(mysql_cli['cmd'], { timeout: 100000 }).then((data_import) => {
+            expect(data_import['code']).to.eq(0)
+
+            //Clean up after ourselves    
+            cy.task('deleteFile', { path: mysql_cli['tmp'] }).then((deleted_tmp_file) => {
+                expect(deleted_tmp_file).to.eq(true)
+            })
+        })
+    })
 })
 
-function test_link (link, title, try_again = true) {
+function test_link(link, title, try_again = true) {
     cy.get('div#control_center_menu a').
         contains(link).
         click().
         then(($control_center) => {
-            if($control_center.find('div#control_center_window').length){
+            if ($control_center.find('div#control_center_window').length) {
                 cy.get('div#control_center_window').then(($a) => {
-                    if($a.find('div#control_center_window h4').length){ 
+                    if ($a.find('div#control_center_window h4').length) {
                         cy.get('div#control_center_window h4').contains(title)
-                    } else if ($a.find('div#control_center_window div').length){
+                    } else if ($a.find('div#control_center_window div').length) {
                         cy.get('div#control_center_window div').contains(title)
                     } else {
                         cy.get('body').contains(title)
-                    }                
+                    }
                 })
             } else {
                 cy.get('body').contains(title)
             }
-        }) 
+        })
 }
 
 Cypress.Commands.add('contains_cc_link', (link, title = '') => {
-    if(title == '') title = link
+    if (title == '') title = link
     let t = Cypress.$("div#control_center_menu a:contains(" + JSON.stringify(link) + ")");
     t.length ? test_link(link, title) : test_link(link.split(' ')[0], title.split(' ')[0])
 })
 
 Cypress.Commands.add('find_online_designer_field', (name, timeout = 10000) => {
-     cy.contains('td', name, { timeout: timeout })
+    cy.contains('td', name, { timeout: timeout })
 })
 
 Cypress.Commands.add('compare_value_by_field_label', (name, value, timeout = 10000) => {
@@ -237,26 +237,69 @@ Cypress.Commands.add('compare_value_by_field_label', (name, value, timeout = 100
     })
 })
 
-Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix = '', $suffix = '', $last_suffix = '', timeout = 10000) => {   
-   cy.contains('td', $name, { timeout: timeout }).
-      parent().
-      parentsUntil('tr').
-      last().
-      parent().
-      then(($tr) => {
+Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix = '', $suffix = '', $last_suffix = '', timeout = 10000) => {
+    cy.contains('td', $name, { timeout: timeout }).
+        parent().
+        parentsUntil('tr').
+        last().
+        parent().
+        then(($tr) => {
 
-        let selector = $type + '[name="' + $prefix + $tr[0]['attributes']['sq_id']['value'] + $suffix + '"]'
-        cy.get(selector, { force: true}).then(($a) => {
-            return $a[0]
-        })        
-      })
+            let selector = $type + '[name="' + $prefix + $tr[0]['attributes']['sq_id']['value'] + $suffix + '"]'
+            cy.get(selector, { force: true }).then(($a) => {
+                return $a[0]
+            })
+        })
+})
+
+
+Cypress.Commands.add('configureModule', (moduleName, settings) => {
+    cy.get(`#external-modules-enabled tr[data-module=${camelToSnakeCase(moduleName)}] button.external-modules-configure-button`).click()
+    // TODO: add support for different setting types
+    for (const property in settings) {
+        if (settings[property]) {
+            cy.get(`tr[field=${property}] input[type='checkbox']`).click()
+        }
+    }
+    cy.get('#external-modules-configure-modal button.save').click()
+})
+
+Cypress.Commands.add('selectTableEntry', (options) => {
+    const {row, col, target, instance} = options;
+    if (target === 'newEvent') {
+
+    } else if (target === 'event' || target === 'instance' || target === 'newInstance') {
+        let tableEntry = cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col})`)
+        switch (target) {
+            case 'event':
+                tableEntry.children('a').click();
+            case 'instance':
+                tableEntry.children('a').click();
+                cy.get(`#instancesTablePopupSub td:contains(${instance})+ td > a`).click()
+                // Select instance
+                break;
+            case 'newInstance':
+                tableEntry.children('button').click();
+                break;
+            default:
+                break;
+        }
+    }
+    // get col
+    // $('#event_grid_table thead > tr > th:nth-child(1')
 })
 
 // Search for and enable an external module
-Cypress.Commands.add('searchAndEnableModule', moduleName => {
+Cypress.Commands.add('searchAndEnableGlobalModule', moduleName => {
     cy.searchForModule(moduleName);
     cy.getDisabledModuleTableEntry(moduleName);
-    cy.enableModule(moduleName);
+    cy.enableModule(moduleName, false);
+})
+
+Cypress.Commands.add('searchAndEnableProjectModule', moduleName => {
+    cy.searchForModule(moduleName);
+    cy.getDisabledModuleTableEntry(moduleName);
+    cy.enableModule(moduleName, true);
 })
 
 /// Search for module in the search bar
@@ -276,24 +319,31 @@ Cypress.Commands.add('getEnabledModuleTableEntry', moduleName => {
 })
 
 /// Attempt to enable a module
-Cypress.Commands.add('enableModule', moduleName => {
-    cy.get(`#external-modules-disabled-table tr[data-module=${camelToSnakeCase(moduleName)}] button.btn-success`).click()
-    cy.get('div.modal-footer > button.enable-button').click()
+Cypress.Commands.add('enableModule', (moduleName, projectLevel) => {
+    cy.get(`#external-modules-disabled-table tr[data-module=${camelToSnakeCase(moduleName)}] button.enable-button`).click()
+    if (!projectLevel) {
+        cy.get('div.modal-footer > button.enable-button').click()
+    }
 })
 
-Cypress.Commands.add('select_text_by_label', ($name, $value) => {   
+Cypress.Commands.add('selectRecord', recordID => {
+    cy.get(`#record_status_table a`).contains(recordID).click()
+
+})
+
+Cypress.Commands.add('select_text_by_label', ($name, $value) => {
     cy.set_field_value_by_label($name, $value, 'input')
 })
 
-Cypress.Commands.add('select_textarea_by_label', ($name, $value) => {   
+Cypress.Commands.add('select_textarea_by_label', ($name, $value) => {
     cy.set_field_value_by_label($name, $value, 'textarea')
 })
 
-Cypress.Commands.add('select_radio_by_label', ($name, $value) => {   
+Cypress.Commands.add('select_radio_by_label', ($name, $value) => {
     cy.set_field_value_by_label($name, $value, 'input', '', '___radio')
 })
 
-Cypress.Commands.add('select_value_by_label', ($name, $value) => {   
+Cypress.Commands.add('select_value_by_label', ($name, $value) => {
     cy.set_field_value_by_label($name, $value, 'select', '', '')
 })
 
@@ -312,32 +362,32 @@ Cypress.Commands.add('select_field_choices', (timeout = 10000) => {
 Cypress.Commands.add('initial_save_field', () => {
     cy.get('input#field_name').then(($f) => {
         cy.contains('button', 'Save').
-           should('be.visible').
-           click().
-           then(() => {
+            should('be.visible').
+            click().
+            then(() => {
 
                 cy.contains('Alert').then(($a) => {
-                    if($a.length){
+                    if ($a.length) {
                         cy.get('button[title=Close]:last:visible').click()
                         cy.get('input#auto_variable_naming').click()
                         cy.contains('button', 'Enable auto naming').click().then(() => {
                             cy.contains('button', 'Save').click()
-                        })       
-                    }                        
+                        })
+                    }
                 })
-            })                
-    })   
+            })
+    })
 })
 
 Cypress.Commands.add('save_field', () => {
     cy.get('input#field_name').then(($f) => {
         cy.contains('button', 'Save').click()
-    }) 
-   
+    })
+
 })
 
 Cypress.Commands.add('add_field', (field_name, type) => {
-     cy.get('input#btn-last').click().then(() => {
+    cy.get('input#btn-last').click().then(() => {
         cy.get('select#field_type').select(type).should('have.value', type).then(() => {
             cy.get('input#field_name').type(field_name).then(() => {
                 cy.save_field()
@@ -347,13 +397,13 @@ Cypress.Commands.add('add_field', (field_name, type) => {
     })
 })
 
-function error(){
+function error() {
     console.log('error');
 }
 
 Cypress.Commands.add('require_redcap_stats', () => {
     cy.server()
-    cy.route({method: 'POST', url: '**/ProjectGeneral/project_stats_ajax.php'}).as('project_stats_ajax')
+    cy.route({ method: 'POST', url: '**/ProjectGeneral/project_stats_ajax.php' }).as('project_stats_ajax')
     cy.wait('@project_stats_ajax').then((xhr, error) => { })
 })
 
@@ -363,15 +413,15 @@ Cypress.Commands.add('get_project_table_row_col', (row = '1', col = '0') => {
 
 Cypress.Commands.add('upload_file', (fileName, fileType = ' ', selector) => {
     cy.get(selector).then(subject => {
-      cy.fixture(fileName, 'base64')
-        .then(Cypress.Blob.base64StringToBlob)
-        .then(blob => {
-          const el = subject[0]
-          const testFile = new File([blob], fileName, { type: fileType })
-          const dataTransfer = new DataTransfer()
-          dataTransfer.items.add(testFile)
-          el.files = dataTransfer.files
-        })
+        cy.fixture(fileName, 'base64')
+            .then(Cypress.Blob.base64StringToBlob)
+            .then(blob => {
+                const el = subject[0]
+                const testFile = new File([blob], fileName, { type: fileType })
+                const dataTransfer = new DataTransfer()
+                dataTransfer.items.add(testFile)
+                el.files = dataTransfer.files
+            })
     })
 })
 
@@ -385,53 +435,57 @@ Cypress.Commands.add('upload_data_dictionary', (fixture_file, pid, date_format =
 
         cy.add_api_user_to_project(admin_user, pid).then(() => {
 
-            cy.request({ url: '/redcap_v' + 
-                     Cypress.env('redcap_version') + 
-                    '/ControlCenter/user_api_ajax.php?action=createToken&api_username=' + 
-                    admin_user + 
-                    '&api_pid=' + 
-                    pid + 
-                    '&api_export=1&api_import=1&mobile_app=0&api_send_email=0'}).should(($token) => {
+            cy.request({
+                url: '/redcap_v' +
+                    Cypress.env('redcap_version') +
+                    '/ControlCenter/user_api_ajax.php?action=createToken&api_username=' +
+                    admin_user +
+                    '&api_pid=' +
+                    pid +
+                    '&api_export=1&api_import=1&mobile_app=0&api_send_email=0'
+            }).should(($token) => {
 
-                        expect($token.body).to.contain('token has been created')
-                        expect($token.body).to.contain(admin_user)
+                expect($token.body).to.contain('token has been created')
+                expect($token.body).to.contain(admin_user)
 
-                        cy.request({ url: '/redcap_v' + 
-                                     Cypress.env('redcap_version') + 
-                                    '/ControlCenter/user_api_ajax.php?action=viewToken&api_username=test_admin&api_pid=' + pid}).then(($super_token) => {
-                        
-                        current_token = Cypress.$($super_token.body).children('div')[0].innerText
+                cy.request({
+                    url: '/redcap_v' +
+                        Cypress.env('redcap_version') +
+                        '/ControlCenter/user_api_ajax.php?action=viewToken&api_username=test_admin&api_pid=' + pid
+                }).then(($super_token) => {
 
-                        cy.fixture(`dictionaries/${fixture_file}`).then(data_dictionary => {
+                    current_token = Cypress.$($super_token.body).children('div')[0].innerText
 
-                                cy.request({
-                                    method: 'POST',
-                                    url: '/api/',
-                                    headers: {
-                                      "Accept":"application/json",
-                                      "Content-Type": "application/x-www-form-urlencoded"
-                                    },
-                                    body: {
-                                        token: current_token,
-                                        content: 'metadata',
-                                        format: 'csv',
-                                        data: data_dictionary,
-                                        returnFormat: 'json'
-                                    },
-                                    timeout: 50000
+                    cy.fixture(`dictionaries/${fixture_file}`).then(data_dictionary => {
 
-                                }).should(($a) => {                                    
-                                    expect($a.status).to.equal(200)
+                        cy.request({
+                            method: 'POST',
+                            url: '/api/',
+                            headers: {
+                                "Accept": "application/json",
+                                "Content-Type": "application/x-www-form-urlencoded"
+                            },
+                            body: {
+                                token: current_token,
+                                content: 'metadata',
+                                format: 'csv',
+                                data: data_dictionary,
+                                returnFormat: 'json'
+                            },
+                            timeout: 50000
 
-                                    cy.request('/redcap_v' + Cypress.env('redcap_version') + '/Logging/index.php?pid=' + pid).should(($e) => {
-                                        expect($e.body).to.contain('List of Data Changes')
-                                        expect($e.body).to.contain('Manage/Design')
-                                    })
-                                })
+                        }).should(($a) => {
+                            expect($a.status).to.equal(200)
+
+                            cy.request('/redcap_v' + Cypress.env('redcap_version') + '/Logging/index.php?pid=' + pid).should(($e) => {
+                                expect($e.body).to.contain('List of Data Changes')
+                                expect($e.body).to.contain('Manage/Design')
+                            })
                         })
+                    })
                 })
             })
-        })        
+        })
     })
 
 })
@@ -442,26 +496,26 @@ Cypress.Commands.add('create_cdisc_project', (project_name, project_type, cdisc_
     cy.mysql_db('set_auto_increment_value', desired_pid)
 
     //Run through the steps to import the project via CDISC ODM
-    cy.visit_base({url: 'index.php?action=create'})
+    cy.visit_base({ url: 'index.php?action=create' })
     cy.get('input#app_title').type(project_name)
     cy.get('select#purpose').select(project_type)
     cy.get('input#project_template_radio2').click()
     cy.upload_file(cdisc_file, 'xml', 'input[name="odm"]')
     cy.get('button').contains('Create Project').click().then(() => {
         let pid = null;
-        cy.url().should((url) => { 
+        cy.url().should((url) => {
             return url
         })
     })
 })
 
 Cypress.Commands.add('add_api_user_to_project', (username, pid) => {
-    cy.visit_version({ page: 'UserRights/index.php', params: 'pid=' + pid}).then(() => {
-        cy.get('input#new_username', {force: true}).clear({force: true}).type(username, {force: true}).then((element) => {
-            cy.get('button', {force: true}).contains('Add with custom rights').click({force: true}).then(() => {
-                cy.get('input[name=api_export]', {force: true}).click()
-                cy.get('input[name=api_import]', {force: true}).click()
-                cy.get('.ui-button', {force: true}).contains(/add user|save changes/i).click().then(() => {
+    cy.visit_version({ page: 'UserRights/index.php', params: 'pid=' + pid }).then(() => {
+        cy.get('input#new_username', { force: true }).clear({ force: true }).type(username, { force: true }).then((element) => {
+            cy.get('button', { force: true }).contains('Add with custom rights').click({ force: true }).then(() => {
+                cy.get('input[name=api_export]', { force: true }).click()
+                cy.get('input[name=api_import]', { force: true }).click()
+                cy.get('.ui-button', { force: true }).contains(/add user|save changes/i).click().then(() => {
                     cy.get('table#table-user_rights_roles_table').should(($e) => {
                         expect($e[0].innerText).to.contain(username)
                     })
@@ -476,7 +530,7 @@ Cypress.Commands.add('mysql_query', (query) => {
 
     const cmd = `${mysql['path']} -h${mysql['host']} --port=${mysql['port']} ${mysql['db_name']} -u${mysql['db_user']} -p${mysql['db_pass']} -e "${query}" -N -s`
 
-    cy.exec(cmd, { timeout: 100000}).then((response) => {
+    cy.exec(cmd, { timeout: 100000 }).then((response) => {
         expect(response['code']).to.eq(0)
         return response['stdout']
     })
@@ -487,12 +541,12 @@ Cypress.Commands.add('num_projects_excluding_archived', () => {
 })
 
 Cypress.Commands.add('delete_project', (pid) => {
-    cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}`})
+    cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
     cy.get('button').contains('Delete the project').click()
     cy.get('input#delete_project_confirm').type('DELETE').then((input) => {
         cy.get(input).closest('div[role="dialog"]').find('button').contains('Delete the project').click()
         cy.get('button').contains('Yes, delete the project').click()
-        cy.get('span#ui-id-3').closest('div[role="dialog"]').find('button').contains('Close').click({force: true})
+        cy.get('span#ui-id-3').closest('div[role="dialog"]').find('button').contains('Close').click({ force: true })
     })
 })
 
@@ -515,16 +569,16 @@ Cypress.Commands.add('delete_project_complete', (pid) => {
 })
 
 Cypress.Commands.add('delete_records', (pid) => {
-    cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}`})
-    cy.get('button', {force: true}).contains('Erase all data').click({force: true})
-    cy.get('div[role="dialog"]', {force: true}).find('button').contains('Erase all data').click({force: true})
-    cy.get('span#ui-id-2', {force: true}).closest('div[role="dialog"]').find('button').contains('Close').click({force: true})
+    cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
+    cy.get('button', { force: true }).contains('Erase all data').click({ force: true })
+    cy.get('div[role="dialog"]', { force: true }).find('button').contains('Erase all data').click({ force: true })
+    cy.get('span#ui-id-2', { force: true }).closest('div[role="dialog"]').find('button').contains('Close').click({ force: true })
 })
 
 Cypress.Commands.add('access_api_token', (pid, user) => {
     // This assumes user already has API token created
     cy.maintain_login().then(($r) => {
-        cy.request({ url: `/redcap_v${Cypress.env('redcap_version')}/ControlCenter/user_api_ajax.php?action=viewToken&api_pid=${pid}&api_username=${user}`})
+        cy.request({ url: `/redcap_v${Cypress.env('redcap_version')}/ControlCenter/user_api_ajax.php?action=viewToken&api_pid=${pid}&api_username=${user}` })
             .then(($token) => {
                 return cy.wrap(Cypress.$($token.body).children('div')[0].innerText);
             })
@@ -539,8 +593,8 @@ Cypress.Commands.add('import_data_file', (fixture_file, api_token) => {
             method: 'POST',
             url: '/api/',
             headers: {
-              "Accept":"application/json",
-              "Content-Type": "application/x-www-form-urlencoded"
+                "Accept": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded"
             },
             body: {
                 token: api_token,
@@ -551,12 +605,12 @@ Cypress.Commands.add('import_data_file', (fixture_file, api_token) => {
                 returnFormat: 'json'
             },
             timeout: 50000
-        }).should(($a) => {                                    
+        }).should(($a) => {
             expect($a.status).to.equal(200)
         })
-        
+
     })
-    
+
 })
 
 //
