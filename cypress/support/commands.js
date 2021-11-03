@@ -265,18 +265,24 @@ Cypress.Commands.add('configureModule', (moduleName, settings) => {
 })
 
 Cypress.Commands.add('selectTableEntry', (options) => {
-    const {row, col, target, instance} = options;
+    const {row, col, target, instance, instanceType} = options;
     if (target === 'newEvent') {
 
     } else if (target === 'event' || target === 'instance' || target === 'newInstance') {
-        let tableEntry = cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col})`)
+        let tableEntry = cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col + 1})`)
         switch (target) {
             case 'event':
                 tableEntry.children('a').click();
+                break;
             case 'instance':
                 tableEntry.children('a').click();
-                cy.get(`#instancesTablePopupSub td:contains(${instance})+ td > a`).click()
-                // Select instance
+                if (instanceType === 'nth')  {
+                    cy.get(`#instancesTablePopupSub td:contains(${instance})+ td > a`).click()
+                } else if (instanceType === "first") {
+                    cy.get('#instancesTablePopupSub tr:nth-child(2) td > a').click();
+                } else if (instanceType === "last") {
+                    cy.get('#instancesTablePopupSub tr:nth-last-child(2) td > a').click();
+                }
                 break;
             case 'newInstance':
                 tableEntry.children('button').click();
