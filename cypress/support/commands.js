@@ -10,6 +10,9 @@ import 'cypress-iframe';
 const shell = require('shelljs')
 const camelToSnakeCase = str => str.toLowerCase().replaceAll(/\s/g, letter => '_');
 
+const InstanceType = Cypress.env('instanceType')
+const TargetType = Cypress.env('targetType')
+
 // Commands in this file are CRUCIAL and are an embedded part of the REDCap Cypress Framework.
 // They are very stable and do not change often, if ever
 
@@ -252,6 +255,9 @@ Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix 
         })
 })
 
+Cypress.Commands.add('leaveForm', () => {
+    cy.get('#__SUBMITBUTTONS__-div button.btn-defaultrc').contains('Cancel').click()
+})
 
 Cypress.Commands.add('configureModule', (moduleName, settings) => {
     cy.get(`#external-modules-enabled tr[data-module=${camelToSnakeCase(moduleName)}] button.external-modules-configure-button`).click()
@@ -264,35 +270,48 @@ Cypress.Commands.add('configureModule', (moduleName, settings) => {
     cy.get('#external-modules-configure-modal button.save').click()
 })
 
+// TODO: Add documentation
+// {
+//     "row": 1, // n
+//     "col": 2, // n
+//     "target" : "event", // "event/newEvent/instance/newInstance"
+//     "instanceType": "first", // "first/last/nth"
+//     "instance": 3 // n
+// }
 Cypress.Commands.add('selectTableEntry', (options) => {
-    const {row, col, target, instance, instanceType} = options;
-    if (target === 'newEvent') {
+    console.log(options)
+    const { row, col, target, instance, instanceType } = options;
+    if (target === TargetType.NewEvent) {
 
-    } else if (target === 'event' || target === 'instance' || target === 'newInstance') {
+    } else if (target === TargetType.Event || target === TargetType.Instance || target === TargetType.NewInstance) {
         let tableEntry = cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col + 1})`)
         switch (target) {
-            case 'event':
+            case TargetType.Event:
                 tableEntry.children('a').click();
                 break;
-            case 'instance':
+            case TargetType.Instance:
                 tableEntry.children('a').click();
-                if (instanceType === 'nth')  {
-                    cy.get(`#instancesTablePopupSub td:contains(${instance})+ td > a`).click()
-                } else if (instanceType === "first") {
-                    cy.get('#instancesTablePopupSub tr:nth-child(2) td > a').click();
-                } else if (instanceType === "last") {
-                    cy.get('#instancesTablePopupSub tr:nth-last-child(2) td > a').click();
+                switch (instanceType) {
+                    case InstanceType.Nth:
+                        cy.get(`#instancesTablePopupSub td:contains(${instance})+ td > a`).click()
+                        break;
+                    case InstanceType.First:
+                        cy.get('#instancesTablePopupSub tr:nth-child(2) td > a').click();
+                        break;
+                    case InstanceType.Last:
+                        cy.get('#instancesTablePopupSub tr:nth-last-child(2) td > a').click();
+                        break;
+                    default:
+                        break;
                 }
                 break;
-            case 'newInstance':
+            case TargetType.NewInstance:
                 tableEntry.children('button').click();
                 break;
             default:
                 break;
         }
     }
-    // get col
-    // $('#event_grid_table thead > tr > th:nth-child(1')
 })
 
 // Search for and enable an external module
