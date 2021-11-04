@@ -250,6 +250,9 @@ Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix 
 
             let selector = $type + '[name="' + $prefix + $tr[0]['attributes']['sq_id']['value'] + $suffix + '"]'
             cy.get(selector, { force: true }).then(($a) => {
+                if ($value) {
+                    $a[0].setAttribute('value', $value)
+                }
                 return $a[0]
             })
         })
@@ -257,6 +260,10 @@ Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix 
 
 Cypress.Commands.add('leaveForm', () => {
     cy.get('#__SUBMITBUTTONS__-div button.btn-defaultrc').contains('Cancel').click()
+})
+
+Cypress.Commands.add('saveForm', () => {
+    cy.get('#__SUBMITBUTTONS__-div > button#submit-btn-saverecord').contains('Save & Exit Form').click()
 })
 
 Cypress.Commands.add('configureModule', (moduleName, settings) => {
