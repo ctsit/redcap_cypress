@@ -1,16 +1,19 @@
 describe('Import Project', () => {
 
-    const page = Cypress.env('page');
-    const path = Cypress.env('path');
-    const projectType = Cypress.env('project_type')
     const moduleName = 'Auto Populate Fields';
+
+    const InstanceType = Cypress.env('instanceType')
+    const Page = Cypress.env('page');
+    const Path = Cypress.env('path');
+    const ProjectType = Cypress.env('projectType')
+    const TargetType = Cypress.env('targetType')
     const pid = 15;
     const recordID = 7;
 
     before(() => {
         cy.set_user_type('admin')
         cy.ui_login()
-        cy.visit_version({ page: page.ExternalModules })
+        cy.visit_version({ page: Page.ExternalModules })
         cy.searchAndEnableGlobalModule(moduleName);
     })
 
@@ -23,11 +26,11 @@ describe('Import Project', () => {
     describe('Project tests', () => {
         it('asserts project was created from xml', () => {
             const fileName = "auto_populate_fields.xml";
-            cy.create_cdisc_project('Auto Populate Fields', projectType.Practice, `${path.cdisc}/${fileName}`, pid)
+            cy.create_cdisc_project('Auto Populate Fields', ProjectType.Practice, `${Path.cdisc}/${fileName}`, pid)
         })
 
         it('asserts module was enabled for project', () => {
-            cy.visit_version({ page: page.ProjectExternalModules, params: `pid=${pid}` })
+            cy.visit_version({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
             cy.searchAndEnableProjectModule(moduleName);
             cy.getEnabledModuleTableEntry(moduleName).should(($t) => {
                 expect($t).to.contain(moduleName)
@@ -36,30 +39,109 @@ describe('Import Project', () => {
 
         describe('Project with chronological event detection off', () => {
             after(() => {
-                // cy.visit_version({ page: page.ProjectExternalModules, params: `pid=${pid}` })
+                cy.visit_version({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
             })
 
             before(() => {
                 cy.configureModule(moduleName);
-                cy.visit_version({ page: page.RecordStatusDashboard, params: `pid=${pid}` })
+            })
+
+            beforeEach(() => {
+                cy.visit_version({ page: Page.RecordStatusDashboard, params: `pid=${pid}` })
                 cy.selectRecord(recordID)
             })
 
             it('asserts that the first instance of a repeat event is auto-populated from the previous saved event/form', () => {
                 // 'dose 1' being populated by last entry of 'enrollment'
+
+                // get the height from 'enrollment'
                 let options = {
                     "row": 2,
-                    "col": 2,
-                    "target": 'event',
-                    "instanceType": "nth", // first, last, nth
-                    "instance": 3
+                    "col": 1,
+                    "target": TargetType.Instance,
+                    "instanceType": InstanceType.Last,
                 }
-                cy.selectTableEntry(options);
-                
-                // visit dose 1
 
-                // cy.saveAndExitForm()
-                // cy.leaveFormWithoutSaving()
+                cy.selectTableEntry(options)
+                let enrollmentHeight;
+                let enrollmentHeightChain = () => {
+                    return cy.select_text_by_label('Height (cm)')
+                        .invoke('val')
+                        .then((val) => {
+                            return val;
+                        });
+                }
+                enrollmentHeightChain().then(height => {
+                    enrollmentHeight = height;
+                    cy.leaveForm()
+                    console.log('enrollment height for last instance', height)
+                })
+
+
+                // get the height from 'dose 1'
+                options = {
+                    "row": 2,
+                    "col": 2,
+                    "target": TargetType.Event,
+                }
+
+                cy.selectTableEntry(options);
+
+                let doseHeightChain = () => {
+                    return cy.select_text_by_label('Height (cm)')
+                        .invoke('val')
+                        .then((val) => {
+                            return val;
+                        });
+                }
+                doseHeightChain().then(height => {
+                    expect(enrollmentHeight).to.equal(height)
+                })
+            })
+
+            it('asserts that the first instance of a repeat event is auto-populated from a newly created event/form', () => {
+                // 'dose 1' being populated by newly entry of 'enrollment'
+                const newEnrollmentHeight = '1112';
+
+                // get the height from 'enrollment'
+                let options = {
+                    "row": 2,
+                    "col": 1,
+                    "target": TargetType.NewInstance
+                }
+
+                cy.selectTableEntry(options)
+                cy.select_text_by_label('Height (cm)', newEnrollmentHeight)
+                    .then(() => {
+                        cy.saveForm()
+                    });
+
+                // enrollmentHeightChain().then(height => {
+                //     enrollmentHeight = height;
+                //     cy.leaveForm()
+                //     console.log('enrollment height for last instance', height)
+                // })
+
+
+                // get the height from 'dose 1'
+                options = {
+                    "row": 2,
+                    "col": 2,
+                    "target": TargetType.Event,
+                }
+
+                cy.selectTableEntry(options);
+
+                let doseHeightChain = () => {
+                    return cy.select_text_by_label('Height (cm)')
+                        .invoke('val')
+                        .then((val) => {
+                            return val;
+                        });
+                }
+                doseHeightChain().then(height => {
+                    expect(newEnrollmentHeight).to.equal(height)
+                })
             })
 
             // it('asserts that the the first instance of a repeat form is auto-populated from the previous saved event/form', () => {
@@ -92,7 +174,7 @@ describe('Import Project', () => {
         //         cy.configureModule(moduleName, {
         //             "chronological_previous_event": true
         //         });
-        //         cy.visit_version({ page: page.RecordStatusDashboard, params: `pid=${pid}` })
+        //         cy.visit_version({ page: Page.RecordStatusDashboard, params: `pid=${pid}` })
         //         cy.selectRecord(recordID)
         //     })
 
