@@ -5,23 +5,11 @@ const TargetType = Cypress.env('targetType')
 // Commands in this file are CRUCIAL and are an embedded part of the REDCap Cypress Framework.
 // They are very stable and do not change often, if ever
 
-Cypress.Commands.add('ui_login', (username, password) => {
-    // let user = window.user_info.get_current_user()
-    // let pass = window.user_info.get_current_pass()
-
-    // let user_type = window.user_info.get_user_type()
-    // let previous_user_type = window.user_info.get_previous_user_type()
-
-    // console.log('User Type Change to ' + user_type + '.')
-    // console.log('previous: ' + previous_user_type)
-    // console.log('current: ' + user_type)
-
+Cypress.Commands.add('uiLogin', (username, password) => {
     cy.visit("")
     cy.get('#username').type(username)
     cy.get('#password').type(password)
     cy.get('#login_btn').click()
-
-    // window.user_info.set_previous_user_type()
 })
 
 Cypress.Commands.add('login', (options) => {
@@ -43,11 +31,11 @@ Cypress.Commands.add('login', (options) => {
     })
 })
 
-Cypress.Commands.add('visit_version', (options) => {
+Cypress.Commands.add('visitVersion', (options) => {
 
     let version = Cypress.env('redcap_version')
 
-    // cy.maintain_login().then(() => {
+    // cy.maintainSession().then(() => {
         if ('params' in options) {
             cy.visit('/redcap_v' + version + '/' + options['page'] + '?' + options['params'])
         } else {
@@ -56,13 +44,13 @@ Cypress.Commands.add('visit_version', (options) => {
     // })
 })
 
-Cypress.Commands.add('visit_base', (options) => {
-    // cy.maintain_login().then(() => {
+Cypress.Commands.add('visitBase', (options) => {
+    // cy.maintainSession().then(() => {
         if ('url' in options) cy.visit(options['url'])
     // })
 })
 
-Cypress.Commands.add('base_db_seed', () => {
+Cypress.Commands.add('baseDbSeed', () => {
 
     let redcap_source_path = Cypress.env('redcap_source_path')
 
@@ -80,14 +68,14 @@ Cypress.Commands.add('base_db_seed', () => {
         if (structure_and_data_file_exists) {
 
             //Create the database if it doesn't exist
-            cy.mysql_db('create_database', '', false).then(() => {
+            cy.mysqlDb('create_database', '', false).then(() => {
 
                 //Pull in the structure and data from REDCap Source
-                cy.mysql_db('structure_and_data', util.baseUrl()).then(() => {
+                cy.mysqlDb('structure_and_data', util.baseUrl()).then(() => {
 
                     if (Cypress.env('redcap_hooks_path') !== undefined) {
                         const redcap_hooks_path = "REDCAP_HOOKS_PATH/" + Cypress.env('redcap_hooks_path').replace(/\//g, "\\/");
-                        cy.mysql_db('hooks_config', redcap_hooks_path) //Fetch the hooks SQL seed data
+                        cy.mysqlDb('hooks_config', redcap_hooks_path) //Fetch the hooks SQL seed data
                     }
 
                     //Clear out all cookies
@@ -103,7 +91,7 @@ Cypress.Commands.add('base_db_seed', () => {
     })
 })
 
-Cypress.Commands.add('maintain_login', () => {
+Cypress.Commands.add('maintainSession', () => {
     // let user = window.user_info.get_current_user()
     // let pass = window.user_info.get_current_pass()
 
@@ -154,7 +142,7 @@ Cypress.Commands.add('maintain_login', () => {
 // })
 
 
-Cypress.Commands.add('mysql_db', (type, replace = '', include_db_name = true) => {
+Cypress.Commands.add('mysqlDb', (type, replace = '', include_db_name = true) => {
 
     const mysql = Cypress.env("mysql")
 
@@ -216,7 +204,7 @@ Cypress.Commands.add('contains_cc_link', (link, title = '') => {
     t.length ? test_link(link, title) : test_link(link.split(' ')[0], title.split(' ')[0])
 })
 
-Cypress.Commands.add('find_online_designer_field', (name, timeout = 10000) => {
+Cypress.Commands.add('findOnlineDesignerField', (name, timeout = 10000) => {
     cy.contains('td', name, { timeout: timeout })
 })
 
@@ -229,7 +217,7 @@ Cypress.Commands.add('compare_value_by_field_label', (name, value, timeout = 100
     })
 })
 
-Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix = '', $suffix = '', $last_suffix = '', timeout = 10000) => {
+Cypress.Commands.add('getFieldValueByLabel', ($name, $type, $prefix = '', $suffix = '', $last_suffix = '', timeout = 10000) => {
     cy.contains('td', $name, { timeout: timeout }).
         parent().
         parentsUntil('tr').
@@ -239,9 +227,6 @@ Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix 
 
             let selector = $type + '[name="' + $prefix + $tr[0]['attributes']['sq_id']['value'] + $suffix + '"]'
             cy.get(selector).then(($a) => {
-                if ($value) {
-                    $a[0].setAttribute('value', $value)
-                }
                 return $a[0]
             })
         })
@@ -288,14 +273,12 @@ const getEventEntry = (row, col) => {
 }
 
 Cypress.Commands.add('selectTableEntry', (options) => {
-    console.log(options)
     const { row, col, target, instance, instanceType } = options;
     if (target === TargetType.NewEvent) {
         createNewEvent(col);
         getEventEntry(row, col + 1).click()
 
     } else if (target === TargetType.Event || target === TargetType.Instance || target === TargetType.NewInstance) {
-        // let tableEntry = cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col + 1})`)
         let tableEntry = getTableEntry(row, col)
         switch (target) {
             case TargetType.Event:
@@ -368,35 +351,35 @@ Cypress.Commands.add('selectRecord', recordID => {
 
 })
 
-Cypress.Commands.add('select_text_by_label', ($name, $value) => {
-    cy.set_field_value_by_label($name, $value, 'input')
+Cypress.Commands.add('selectTextByLabel', ($name) => {
+    cy.getFieldValueByLabel($name, 'input')
 })
 
-Cypress.Commands.add('select_textarea_by_label', ($name, $value) => {
-    cy.set_field_value_by_label($name, $value, 'textarea')
+Cypress.Commands.add('selectTextAreaByLabel', ($name, $value) => {
+    cy.getFieldValueByLabel($name, 'textarea')
 })
 
-Cypress.Commands.add('select_radio_by_label', ($name, $value) => {
-    cy.set_field_value_by_label($name, $value, 'input', '', '___radio')
+Cypress.Commands.add('selectRadioByLabel', ($name, $value) => {
+    cy.getFieldValueByLabel($name, 'input', '', '___radio')
 })
 
-Cypress.Commands.add('select_value_by_label', ($name, $value) => {
-    cy.set_field_value_by_label($name, $value, 'select', '', '')
+Cypress.Commands.add('selectValueByLabel', ($name, $value) => {
+    cy.getFieldValueByLabel($name, 'select', '', '')
 })
 
-Cypress.Commands.add('select_checkbox_by_label', ($name, $value) => {
-    cy.set_field_value_by_label($name, $value, 'input', '__chkn__', '')
+Cypress.Commands.add('selectCheckboxByLabel', ($name, $value) => {
+    cy.getFieldValueByLabel($name, 'input', '__chkn__', '')
 })
 
 Cypress.Commands.add('edit_field_by_label', (name, timeout = 10000) => {
-    cy.find_online_designer_field(name).parent().parentsUntil('tr').find('img[title=Edit]').parent().click()
+    cy.findOnlineDesignerField(name).parent().parentsUntil('tr').find('img[title=Edit]').parent().click()
 })
 
-Cypress.Commands.add('select_field_choices', (timeout = 10000) => {
+Cypress.Commands.add('selectFieldChoices', (timeout = 10000) => {
     cy.get('form#addFieldForm').children().get('span').contains('Choices').parent().parent().find('textarea')
 })
 
-Cypress.Commands.add('initial_save_field', () => {
+Cypress.Commands.add('initial_saveField', () => {
     cy.get('input#field_name').then(($f) => {
         cy.contains('button', 'Save').
             should('be.visible').
@@ -416,7 +399,7 @@ Cypress.Commands.add('initial_save_field', () => {
     })
 })
 
-Cypress.Commands.add('save_field', () => {
+Cypress.Commands.add('saveField', () => {
     cy.get('input#field_name').then(($f) => {
         cy.contains('button', 'Save').click()
     })
@@ -427,16 +410,12 @@ Cypress.Commands.add('add_field', (field_name, type) => {
     cy.get('input#btn-last').click().then(() => {
         cy.get('select#field_type').select(type).should('have.value', type).then(() => {
             cy.get('input#field_name').type(field_name).then(() => {
-                cy.save_field()
-                cy.find_online_designer_field(field_name)
+                cy.saveField()
+                cy.findOnlineDesignerField(field_name)
             })
         })
     })
 })
-
-function error() {
-    console.log('error');
-}
 
 // Cypress.Commands.add('require_redcap_stats', () => {
 //     cy.server()
@@ -448,7 +427,7 @@ Cypress.Commands.add('get_project_table_row_col', (row = '1', col = '0') => {
     cy.get('table#table-proj_table tr:nth-child(' + row + ') td:nth-child(' + col + ')')
 })
 
-Cypress.Commands.add('upload_file', (fileName, fileType = ' ', selector) => {
+Cypress.Commands.add('uploadFile', (fileName, fileType = ' ', selector) => {
     cy.get(selector).then(subject => {
         cy.fixture(fileName, 'base64')
             .then(Cypress.Blob.base64StringToBlob)
@@ -468,9 +447,9 @@ Cypress.Commands.add('upload_data_dictionary', (fixture_file, pid, date_format =
     let admin_user = Cypress.env('users')['admin']['user']
     let current_token = null;
 
-    cy.maintain_login().then(($r) => {
+    cy.maintainSession().then(($r) => {
 
-        cy.add_api_user_to_project(admin_user, pid).then(() => {
+        cy.addApiUserToProject(admin_user, pid).then(() => {
 
             cy.request({
                 url: '/redcap_v' +
@@ -527,17 +506,17 @@ Cypress.Commands.add('upload_data_dictionary', (fixture_file, pid, date_format =
 
 })
 
-Cypress.Commands.add('create_cdisc_project', (project_name, project_type, cdisc_file, project_id) => {
+Cypress.Commands.add('createCdiscProject', (project_name, project_type, cdisc_file, project_id) => {
     //Set the Desired Project ID
     const desired_pid = 'MAGIC_AUTO_NUMBER/' + project_id;
-    cy.mysql_db('set_auto_increment_value', desired_pid)
+    cy.mysqlDb('set_auto_increment_value', desired_pid)
 
     //Run through the steps to import the project via CDISC ODM
-    cy.visit_base({ url: 'index.php?action=create' })
+    cy.visitBase({ url: 'index.php?action=create' })
     cy.get('input#app_title').type(project_name)
     cy.get('select#purpose').select(project_type)
     cy.get('input#project_template_radio2').click()
-    cy.upload_file(cdisc_file, 'xml', 'input[name="odm"]')
+    cy.uploadFile(cdisc_file, 'xml', 'input[name="odm"]')
     cy.get('button').contains('Create Project').click().then(() => {
         let pid = null;
         cy.url().should((url) => {
@@ -546,8 +525,8 @@ Cypress.Commands.add('create_cdisc_project', (project_name, project_type, cdisc_
     })
 })
 
-Cypress.Commands.add('add_api_user_to_project', (username, pid) => {
-    cy.visit_version({ page: 'UserRights/index.php', params: 'pid=' + pid }).then(() => {
+Cypress.Commands.add('addApiUserToProject', (username, pid) => {
+    cy.visitVersion({ page: 'UserRights/index.php', params: 'pid=' + pid }).then(() => {
         cy.get('input#new_username').clear({ force: true }).type(username, { force: true }).then((element) => {
             cy.get('button').contains('Add with custom rights').click({ force: true }).then(() => {
                 cy.get('input[name=api_export]').click()
@@ -562,7 +541,7 @@ Cypress.Commands.add('add_api_user_to_project', (username, pid) => {
     })
 })
 
-Cypress.Commands.add('mysql_query', (query) => {
+Cypress.Commands.add('mysqlQuery', (query) => {
     const mysql = Cypress.env("mysql")
 
     const cmd = `${mysql['path']} -h${mysql['host']} --port=${mysql['port']} ${mysql['db_name']} -u${mysql['db_user']} -p${mysql['db_pass']} -e "${query}" -N -s`
@@ -574,11 +553,11 @@ Cypress.Commands.add('mysql_query', (query) => {
 })
 
 Cypress.Commands.add('num_projects_excluding_archived', () => {
-    return cy.mysql_query("SELECT count(*) FROM redcap_projects WHERE status != 3;")
+    return cy.mysqlQuery("SELECT count(*) FROM redcap_projects WHERE status != 3;")
 })
 
 Cypress.Commands.add('delete_project', (pid) => {
-    cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
+    cy.visitVersion({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
     cy.get('button').contains('Delete the project').click()
     cy.get('input#delete_project_confirm').type('DELETE').then((input) => {
         cy.get(input.toString()).closest('div[role="dialog"]').find('button').contains('Delete the project').click()
@@ -588,7 +567,7 @@ Cypress.Commands.add('delete_project', (pid) => {
 })
 
 Cypress.Commands.add('delete_project_complete', (pid) => {
-    cy.mysql_query(`START TRANSACTION;
+    cy.mysqlQuery(`START TRANSACTION;
 
         USE \`REDCAP_DB_NAME\`;
         SET AUTOCOMMIT=0;
@@ -606,7 +585,7 @@ Cypress.Commands.add('delete_project_complete', (pid) => {
 })
 
 Cypress.Commands.add('delete_records', (pid) => {
-    cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
+    cy.visitVersion({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
     cy.get('button').contains('Erase all data').click({ force: true })
     cy.get('div[role="dialog"]').find('button').contains('Erase all data').click({ force: true })
     cy.get('span#ui-id-2').closest('div[role="dialog"]').find('button').contains('Close').click({ force: true })
@@ -614,7 +593,7 @@ Cypress.Commands.add('delete_records', (pid) => {
 
 Cypress.Commands.add('access_api_token', (pid, user) => {
     // This assumes user already has API token created
-    cy.maintain_login().then(($r) => {
+    cy.maintainSession().then(($r) => {
         cy.request({ url: `/redcap_v${Cypress.env('redcap_version')}/ControlCenter/user_api_ajax.php?action=viewToken&api_pid=${pid}&api_username=${user}` })
             .then(($token) => {
                 return cy.wrap(Cypress.$($token.body).children('div')[0].innerText);

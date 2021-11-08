@@ -12,8 +12,8 @@ describe('Import Project', () => {
 
     before(() => {
         // cy.set_user_type('admin')
-        cy.ui_login("test_admin", "Testing123")
-        cy.visit_version({ page: Page.ExternalModules })
+        cy.uiLogin("test_admin", "Testing123")
+        cy.visitVersion({ page: Page.ExternalModules })
         cy.searchAndEnableGlobalModule(moduleName);
     })
 
@@ -26,11 +26,11 @@ describe('Import Project', () => {
     describe('Project tests', () => {
         it('asserts project was created from xml', () => {
             const fileName = "auto_populate_fields.xml";
-            cy.create_cdisc_project('Auto Populate Fields', ProjectType.Practice, `${Path.cdisc}/${fileName}`, pid)
+            cy.createCdiscProject('Auto Populate Fields', ProjectType.Practice, `${Path.cdisc}/${fileName}`, pid)
         })
 
         it('asserts module was enabled for project', () => {
-            cy.visit_version({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
+            cy.visitVersion({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
             cy.searchAndEnableProjectModule(moduleName);
             cy.getEnabledModuleTableEntry(moduleName).should(($t) => {
                 expect($t).to.contain(moduleName)
@@ -39,7 +39,7 @@ describe('Import Project', () => {
 
         describe('Project with chronological event detection off', () => {
             after(() => {
-                // cy.visit_version({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
+                // cy.visitVersion({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
             })
 
             before(() => {
@@ -47,7 +47,7 @@ describe('Import Project', () => {
             })
 
             beforeEach(() => {
-                cy.visit_version({ page: Page.RecordStatusDashboard, params: `pid=${pid}` })
+                cy.visitVersion({ page: Page.RecordStatusDashboard, params: `pid=${pid}` })
                 cy.selectRecord(recordID)
             })
 
@@ -65,7 +65,7 @@ describe('Import Project', () => {
                 cy.selectTableEntry(options)
                 let enrollmentHeight;
                 let enrollmentHeightChain = () => {
-                    return cy.select_text_by_label('Height (cm)')
+                    return cy.selectTextByLabel('Height (cm)')
                         .invoke('val')
                         .then((val) => {
                             return val;
@@ -89,7 +89,7 @@ describe('Import Project', () => {
                 cy.selectTableEntry(options);
 
                 let doseHeightChain = () => {
-                    return cy.select_text_by_label('Height (cm)')
+                    return cy.selectTextByLabel('Height (cm)')
                         .invoke('val')
                         .then((val) => {
                             return val;
@@ -112,7 +112,8 @@ describe('Import Project', () => {
                 }
 
                 cy.selectTableEntry(options)
-                cy.select_text_by_label('Height (cm)', newEnrollmentHeight)
+                cy.selectTextByLabel('Height (cm)')
+                    .invoke('val', newEnrollmentHeight)
                     .then(() => {
                         cy.saveForm()
                     });
@@ -134,7 +135,7 @@ describe('Import Project', () => {
                 cy.selectTableEntry(options);
 
                 let doseHeightChain = () => {
-                    return cy.select_text_by_label('Height (cm)')
+                    return cy.selectTextByLabel('Height (cm)')
                         .invoke('val')
                         .then((val) => {
                             return val;
@@ -161,7 +162,7 @@ describe('Import Project', () => {
 
                 let doseHeight;
                 let doseHeightChain = () => {
-                    return cy.select_text_by_label('Height (cm)')
+                    return cy.selectTextByLabel('Height (cm)')
                         .invoke('val')
                         .then((val) => {
                             return val
@@ -182,7 +183,7 @@ describe('Import Project', () => {
 
                 cy.selectTableEntry(options)
 
-                cy.select_text_by_label('Height (cm)')
+                cy.selectTextByLabel('Height (cm)')
                     .invoke('val')
                     .then((val) => {
                         expect(doseHeight).to.equal(val)
@@ -223,7 +224,7 @@ describe('Import Project', () => {
         //         cy.configureModule(moduleName, {
         //             "chronological_previous_event": true
         //         });
-        //         cy.visit_version({ page: Page.RecordStatusDashboard, params: `pid=${pid}` })
+        //         cy.visitVersion({ page: Page.RecordStatusDashboard, params: `pid=${pid}` })
         //         cy.selectRecord(recordID)
         //     })
 
