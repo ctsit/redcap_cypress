@@ -9,7 +9,8 @@
     "cypress": "^8.7.0",
     "cypress-iframe": "1.0.1",
     "sed-lite": "0.8.2",
-    "shelljs": "0.8.4"
+    "shelljs": "0.8.4",
+    "typescript": "^4.4.4"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

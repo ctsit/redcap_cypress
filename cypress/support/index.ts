@@ -16,69 +16,75 @@
 // Import commands.js using ES2015 syntax:
 import './commands'
 
-import { core } from './core/index'
-import { hooks } from './hooks/index'
-import { modules } from './modules/index'
-import { plugins } from './plugins/index'
-import { projects } from './projects/index'
+// import { core } from './core/index'
+// import { hooks } from './hooks/index'
+// import { modules } from './modules/index'
+// import { plugins } from './plugins/index'
+// import { projects } from './projects/index'
 
-const sed_lite = require('sed-lite').sed;
+// import "./commands";
 
-function UserInfo() {
+// declare function require(name:string);
 
-    let u = ''
-    let u_t = ''
-    let p_u_t = ''
+// const sed_lite = require('sed-lite').sed;
 
-    let user = ''
-    let pass = ''
 
-    this.set_users = (users) => {
-        u = users;
-    }
 
-    this.get_users = () => {
-        return u
-    }
+// function UserInfo() {
 
-    this.set_previous_user_type = () => {
-        p_u_t = u_t
-    }
+//     let u = ''
+//     let u_t = ''
+//     let p_u_t = ''
 
-    this.get_previous_user_type= () => {
-        return p_u_t
-    }
+//     let user = ''
+//     let pass = ''
 
-    this.set_user_type = (user_type) => {
-        u_t = user_type        
-        this.set_current_user()
-        this.set_current_pass()
-    }
+//     this.set_users = (users) => {
+//         u = users;
+//     }
 
-    this.get_user_type = () => {
-        return u_t
-    }
+//     this.get_users = () => {
+//         return u
+//     }
 
-    this.set_current_user = () => {
-        user = u[u_t]['user'];
-    }
+//     this.set_previous_user_type = () => {
+//         p_u_t = u_t
+//     }
 
-    this.get_current_user = () => {
-        return user
-    }
+//     this.get_previous_user_type= () => {
+//         return p_u_t
+//     }
 
-    this.set_current_pass = () => {
-        pass = u[u_t]['pass'];
-    }
+//     this.set_user_type = (user_type) => {
+//         u_t = user_type        
+//         this.set_current_user()
+//         this.set_current_pass()
+//     }
 
-    this.get_current_pass = () => {
-        return pass
-    }
+//     this.get_user_type = () => {
+//         return u_t
+//     }
 
-}
+//     this.set_current_user = () => {
+//         user = u[u_t]['user'];
+//     }
 
-window.user_info = new UserInfo();
-window.base_url = 'BASE_URL/' + Cypress.config('baseUrl').replace(/\//g, "\\/")
+//     this.get_current_user = () => {
+//         return user
+//     }
+
+//     this.set_current_pass = () => {
+//         pass = u[u_t]['pass'];
+//     }
+
+//     this.get_current_pass = () => {
+//         return pass
+//     }
+
+// }
+
+// window.user_info = new UserInfo();
+// window.base_url = 
 
 // console.log(`s/${window.base_url}/`)
 // console.log('s/BASE_URL/http:\\/\\/localhost:8401/')
@@ -100,20 +106,20 @@ window.base_url = 'BASE_URL/' + Cypress.config('baseUrl').replace(/\//g, "\\/")
 before(() => {
 
     //Cypress Users
-    cy.set_user_info(Cypress.env('users'))
+    // cy.set_user_info(Cypress.env('users'))
 
     //By default, we are going to login as a standard user
-    cy.set_user_type('standard')
+    // cy.set_user_type('standard')
 
     //Create the initial database structure
     cy.base_db_seed()
 
     // Import the bootstrapping from these files:
-    core()          // /support/core/index.js
-    hooks()         // /support/hooks/index.js
-    modules()       // /support/modules/index.js
-    plugins()       // /support/plugins/index.js
-    projects()      // /support/projects/index.js
+    // core()          // /support/core/index.js
+    // hooks()         // /support/hooks/index.js
+    // modules()       // /support/modules/index.js
+    // plugins()       // /support/plugins/index.js
+    // projects()      // /support/projects/index.js
 })
 
 beforeEach(() => {  
@@ -124,3 +130,4 @@ Cypress.on("uncaught:exception", (err, runnable) => {
   console.debug(">> uncaught:exception disabled in cypress/support/index.js");
   return false;  // prevents Cypress from failing the test
 });
+

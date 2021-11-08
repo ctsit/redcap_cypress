@@ -1,38 +1,27 @@
-//Here we are importing commands from the sub-folders that aren't quite as stable
-import './core/commands'
-import './hooks/commands'
-import './modules/commands'
-import './plugins/commands'
-import './projects/commands'
-
-import compareVersions from 'compare-versions';
-import 'cypress-iframe';
-const shell = require('shelljs')
-const camelToSnakeCase = str => str.toLowerCase().replaceAll(/\s/g, letter => '_');
-
+import * as util from "./util";
 const InstanceType = Cypress.env('instanceType')
 const TargetType = Cypress.env('targetType')
 
 // Commands in this file are CRUCIAL and are an embedded part of the REDCap Cypress Framework.
 // They are very stable and do not change often, if ever
 
-Cypress.Commands.add('ui_login', () => {
-    let user = window.user_info.get_current_user()
-    let pass = window.user_info.get_current_pass()
+Cypress.Commands.add('ui_login', (username, password) => {
+    // let user = window.user_info.get_current_user()
+    // let pass = window.user_info.get_current_pass()
 
-    let user_type = window.user_info.get_user_type()
-    let previous_user_type = window.user_info.get_previous_user_type()
+    // let user_type = window.user_info.get_user_type()
+    // let previous_user_type = window.user_info.get_previous_user_type()
 
-    console.log('User Type Change to ' + user_type + '.')
-    console.log('previous: ' + previous_user_type)
-    console.log('current: ' + user_type)
+    // console.log('User Type Change to ' + user_type + '.')
+    // console.log('previous: ' + previous_user_type)
+    // console.log('current: ' + user_type)
 
     cy.visit("")
-    cy.get('#username').type(user)
-    cy.get('#password').type(pass)
+    cy.get('#username').type(username)
+    cy.get('#password').type(password)
     cy.get('#login_btn').click()
 
-    window.user_info.set_previous_user_type()
+    // window.user_info.set_previous_user_type()
 })
 
 Cypress.Commands.add('login', (options) => {
@@ -58,19 +47,19 @@ Cypress.Commands.add('visit_version', (options) => {
 
     let version = Cypress.env('redcap_version')
 
-    cy.maintain_login().then(() => {
+    // cy.maintain_login().then(() => {
         if ('params' in options) {
             cy.visit('/redcap_v' + version + '/' + options['page'] + '?' + options['params'])
         } else {
             cy.visit('/redcap_v' + version + '/' + options['page'])
         }
-    })
+    // })
 })
 
 Cypress.Commands.add('visit_base', (options) => {
-    cy.maintain_login().then(() => {
+    // cy.maintain_login().then(() => {
         if ('url' in options) cy.visit(options['url'])
-    })
+    // })
 })
 
 Cypress.Commands.add('base_db_seed', () => {
@@ -83,7 +72,7 @@ Cypress.Commands.add('base_db_seed', () => {
 
     cy.task('populateStructureAndData', {
         redcap_version: Cypress.env('redcap_version'),
-        advanced_user_info: compareVersions.compare(Cypress.env('redcap_version'), '10.1.0', '>='),
+        advanced_user_info: (Cypress.env('redcap_version') >= '10.1.0'),
         source_location: redcap_source_path
     }).then((structure_and_data_file_exists) => {
 
@@ -94,7 +83,7 @@ Cypress.Commands.add('base_db_seed', () => {
             cy.mysql_db('create_database', '', false).then(() => {
 
                 //Pull in the structure and data from REDCap Source
-                cy.mysql_db('structure_and_data', window.base_url).then(() => {
+                cy.mysql_db('structure_and_data', util.baseUrl()).then(() => {
 
                     if (Cypress.env('redcap_hooks_path') !== undefined) {
                         const redcap_hooks_path = "REDCAP_HOOKS_PATH/" + Cypress.env('redcap_hooks_path').replace(/\//g, "\\/");
@@ -115,17 +104,17 @@ Cypress.Commands.add('base_db_seed', () => {
 })
 
 Cypress.Commands.add('maintain_login', () => {
-    let user = window.user_info.get_current_user()
-    let pass = window.user_info.get_current_pass()
+    // let user = window.user_info.get_current_user()
+    // let pass = window.user_info.get_current_pass()
 
-    let user_type = window.user_info.get_user_type()
-    let previous_user_type = window.user_info.get_previous_user_type()
+    // let user_type = window.user_info.get_user_type()
+    // let previous_user_type = window.user_info.get_previous_user_type()
 
-    console.log('User Type Change to ' + user_type + '.')
-    console.log('previous: ' + previous_user_type)
-    console.log('current: ' + user_type)
+    // console.log('User Type Change to ' + user_type + '.')
+    // console.log('previous: ' + previous_user_type)
+    // console.log('current: ' + user_type)
 
-    if (user_type === previous_user_type) {
+    // if (user_type === previous_user_type) {
         cy.getCookies()
             .should((cookies) => {
 
@@ -137,32 +126,32 @@ Cypress.Commands.add('maintain_login', () => {
                     //But, if we don't, then let's simply re-login, right?    
                 } else {
                     console.log('Regular Login')
-                    cy.login({ username: user, password: pass })
+                    // cy.login({ username: user, password: pass })
                 }
 
             })
 
         //If user type has changed, let's clear cookies and login again
-    } else {
-        //Ensure we logout when a user changes
-        cy.visit('/redcap_v' + Cypress.env('redcap_version') + '/index.php?logout=1')
-        cy.login({ username: user, password: pass })
-    }
+    // } else {
+    //     //Ensure we logout when a user changes
+    //     cy.visit('/redcap_v' + Cypress.env('redcap_version') + '/index.php?logout=1')
+    //     cy.login({ username: user, password: pass })
+    // }
 
-    window.user_info.set_previous_user_type()
+    // window.user_info.set_previous_user_type()
 })
 
-Cypress.Commands.add('set_user_type', (user_type) => {
-    window.user_info.set_user_type(user_type)
-})
+// Cypress.Commands.add('set_user_type', (user_type) => {
+//     window.user_info.set_user_type(user_type)
+// })
 
-Cypress.Commands.add('set_user_info', (users) => {
-    if (users !== undefined) {
-        window.user_info.set_users(users)
-    } else {
-        alert('users, which defines what users are in your seed database, is missing from cypress.env.json.  Please configure it before proceeding.')
-    }
-})
+// Cypress.Commands.add('set_user_info', (users) => {
+//     if (users !== undefined) {
+//         window.user_info.set_users(users)
+//     } else {
+//         alert('users, which defines what users are in your seed database, is missing from cypress.env.json.  Please configure it before proceeding.')
+//     }
+// })
 
 
 Cypress.Commands.add('mysql_db', (type, replace = '', include_db_name = true) => {
@@ -234,7 +223,7 @@ Cypress.Commands.add('find_online_designer_field', (name, timeout = 10000) => {
 Cypress.Commands.add('compare_value_by_field_label', (name, value, timeout = 10000) => {
     cy.contains('td', name, { timeout: timeout }).parent().parentsUntil('tr').last().parent().then(($tr) => {
         const name = $tr[0]['attributes']['sq_id']['value']
-        cy.get('[name="' + name + '"]', { force: true }).should(($a) => {
+        cy.get('[name="' + name + '"]').should(($a) => {
             expect($a[0]['value']).to.equal(value)
         })
     })
@@ -249,7 +238,7 @@ Cypress.Commands.add('set_field_value_by_label', ($name, $value, $type, $prefix 
         then(($tr) => {
 
             let selector = $type + '[name="' + $prefix + $tr[0]['attributes']['sq_id']['value'] + $suffix + '"]'
-            cy.get(selector, { force: true }).then(($a) => {
+            cy.get(selector).then(($a) => {
                 if ($value) {
                     $a[0].setAttribute('value', $value)
                 }
@@ -267,7 +256,7 @@ Cypress.Commands.add('saveForm', () => {
 })
 
 Cypress.Commands.add('configureModule', (moduleName, settings) => {
-    cy.get(`#external-modules-enabled tr[data-module=${camelToSnakeCase(moduleName)}] button.external-modules-configure-button`).click()
+    cy.get(`#external-modules-enabled tr[data-module=${util.camelToSnakeCase(moduleName)}] button.external-modules-configure-button`).click()
     // TODO: add support for different setting types
     for (const property in settings) {
         if (settings[property]) {
@@ -285,13 +274,29 @@ Cypress.Commands.add('configureModule', (moduleName, settings) => {
 //     "instanceType": "first", // "first/last/nth"
 //     "instance": 3 // n
 // }
+
+const createNewEvent = (col) => {
+    cy.get(`#event_grid_table > thead th.evGridHdr:nth-child(${col + 1}) > div.divBtnAddRptEv > button`).click()
+}
+
+const getTableEntry = (row, col) => {
+    return cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col + 1})`)
+}
+
+const getEventEntry = (row, col) => {
+    return getTableEntry(row, col).children('a')
+}
+
 Cypress.Commands.add('selectTableEntry', (options) => {
     console.log(options)
     const { row, col, target, instance, instanceType } = options;
     if (target === TargetType.NewEvent) {
+        createNewEvent(col);
+        getEventEntry(row, col + 1).click()
 
     } else if (target === TargetType.Event || target === TargetType.Instance || target === TargetType.NewInstance) {
-        let tableEntry = cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col + 1})`)
+        // let tableEntry = cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col + 1})`)
+        let tableEntry = getTableEntry(row, col)
         switch (target) {
             case TargetType.Event:
                 tableEntry.children('a').click();
@@ -352,7 +357,7 @@ Cypress.Commands.add('getEnabledModuleTableEntry', moduleName => {
 
 /// Attempt to enable a module
 Cypress.Commands.add('enableModule', (moduleName, projectLevel) => {
-    cy.get(`#external-modules-disabled-table tr[data-module=${camelToSnakeCase(moduleName)}] button.enable-button`).click()
+    cy.get(`#external-modules-disabled-table tr[data-module=${util.camelToSnakeCase(moduleName)}] button.enable-button`).click()
     if (!projectLevel) {
         cy.get('div.modal-footer > button.enable-button').click()
     }
@@ -398,7 +403,7 @@ Cypress.Commands.add('initial_save_field', () => {
             click().
             then(() => {
 
-                cy.contains('Alert').then(($a) => {
+                cy.contains('Alert').then(($a: any) => {
                     if ($a.length) {
                         cy.get('button[title=Close]:last:visible').click()
                         cy.get('input#auto_variable_naming').click()
@@ -433,11 +438,11 @@ function error() {
     console.log('error');
 }
 
-Cypress.Commands.add('require_redcap_stats', () => {
-    cy.server()
-    cy.route({ method: 'POST', url: '**/ProjectGeneral/project_stats_ajax.php' }).as('project_stats_ajax')
-    cy.wait('@project_stats_ajax').then((xhr, error) => { })
-})
+// Cypress.Commands.add('require_redcap_stats', () => {
+//     cy.server()
+//     cy.route({ method: 'POST', url: '**/ProjectGeneral/project_stats_ajax.php' }).as('project_stats_ajax')
+//     cy.wait('@project_stats_ajax').then((xhr, error) => { })
+// })
 
 Cypress.Commands.add('get_project_table_row_col', (row = '1', col = '0') => {
     cy.get('table#table-proj_table tr:nth-child(' + row + ') td:nth-child(' + col + ')')
@@ -543,11 +548,11 @@ Cypress.Commands.add('create_cdisc_project', (project_name, project_type, cdisc_
 
 Cypress.Commands.add('add_api_user_to_project', (username, pid) => {
     cy.visit_version({ page: 'UserRights/index.php', params: 'pid=' + pid }).then(() => {
-        cy.get('input#new_username', { force: true }).clear({ force: true }).type(username, { force: true }).then((element) => {
-            cy.get('button', { force: true }).contains('Add with custom rights').click({ force: true }).then(() => {
-                cy.get('input[name=api_export]', { force: true }).click()
-                cy.get('input[name=api_import]', { force: true }).click()
-                cy.get('.ui-button', { force: true }).contains(/add user|save changes/i).click().then(() => {
+        cy.get('input#new_username').clear({ force: true }).type(username, { force: true }).then((element) => {
+            cy.get('button').contains('Add with custom rights').click({ force: true }).then(() => {
+                cy.get('input[name=api_export]').click()
+                cy.get('input[name=api_import]').click()
+                cy.get('.ui-button').contains(/add user|save changes/i).click().then(() => {
                     cy.get('table#table-user_rights_roles_table').should(($e) => {
                         expect($e[0].innerText).to.contain(username)
                     })
@@ -576,7 +581,7 @@ Cypress.Commands.add('delete_project', (pid) => {
     cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
     cy.get('button').contains('Delete the project').click()
     cy.get('input#delete_project_confirm').type('DELETE').then((input) => {
-        cy.get(input).closest('div[role="dialog"]').find('button').contains('Delete the project').click()
+        cy.get(input.toString()).closest('div[role="dialog"]').find('button').contains('Delete the project').click()
         cy.get('button').contains('Yes, delete the project').click()
         cy.get('span#ui-id-3').closest('div[role="dialog"]').find('button').contains('Close').click({ force: true })
     })
@@ -602,9 +607,9 @@ Cypress.Commands.add('delete_project_complete', (pid) => {
 
 Cypress.Commands.add('delete_records', (pid) => {
     cy.visit_version({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
-    cy.get('button', { force: true }).contains('Erase all data').click({ force: true })
-    cy.get('div[role="dialog"]', { force: true }).find('button').contains('Erase all data').click({ force: true })
-    cy.get('span#ui-id-2', { force: true }).closest('div[role="dialog"]').find('button').contains('Close').click({ force: true })
+    cy.get('button').contains('Erase all data').click({ force: true })
+    cy.get('div[role="dialog"]').find('button').contains('Erase all data').click({ force: true })
+    cy.get('span#ui-id-2').closest('div[role="dialog"]').find('button').contains('Close').click({ force: true })
 })
 
 Cypress.Commands.add('access_api_token', (pid, user) => {

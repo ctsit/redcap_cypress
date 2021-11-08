@@ -11,8 +11,8 @@ describe('Import Project', () => {
     const recordID = 7;
 
     before(() => {
-        cy.set_user_type('admin')
-        cy.ui_login()
+        // cy.set_user_type('admin')
+        cy.ui_login("test_admin", "Testing123")
         cy.visit_version({ page: Page.ExternalModules })
         cy.searchAndEnableGlobalModule(moduleName);
     })
@@ -39,7 +39,7 @@ describe('Import Project', () => {
 
         describe('Project with chronological event detection off', () => {
             after(() => {
-                cy.visit_version({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
+                // cy.visit_version({ page: Page.ProjectExternalModules, params: `pid=${pid}` })
             })
 
             before(() => {
@@ -83,6 +83,7 @@ describe('Import Project', () => {
                     "row": 2,
                     "col": 2,
                     "target": TargetType.Event,
+                    "instanceType": ""
                 }
 
                 cy.selectTableEntry(options);
@@ -144,16 +145,64 @@ describe('Import Project', () => {
                 })
             })
 
-            // it('asserts that the the first instance of a repeat form is auto-populated from the previous saved event/form', () => {
-            //     // 'visit 1' populated by last entry of 'dose 1'
-            //     return true;
-            // })
+            it('asserts that the the first instance of a repeat form is auto-populated from the previous saved event/form', () => {
+                // 'visit 1' populated by last entry of 'dose 1'
 
-            // it('asserts that the the nth instance of a repeat event is auto-populated from the immediate previous instance', () => {
-            //     // 'dose 1' instance 2 populated by 'dose 1' instance 1
-            //     // 'dose 1' instance 3 populated by 'dose 1' instance 2
-            //     return true;
-            // })
+
+                // create entry for dose 1
+                let options = {
+                    "row": 2,
+                    "col": 2,
+                    "target": TargetType.Event,
+                }
+
+                cy.selectTableEntry(options)
+
+
+                let doseHeight;
+                let doseHeightChain = () => {
+                    return cy.select_text_by_label('Height (cm)')
+                        .invoke('val')
+                        .then((val) => {
+                            return val
+                        })
+                }
+
+                doseHeightChain().then(height => {
+                    doseHeight = height;
+                    cy.saveForm()
+                })
+
+                // check value is in first instance of visit 1
+                options = {
+                    "row": 2,
+                    "col": 3,
+                    "target": TargetType.Event
+                }
+
+                cy.selectTableEntry(options)
+
+                cy.select_text_by_label('Height (cm)')
+                    .invoke('val')
+                    .then((val) => {
+                        expect(doseHeight).to.equal(val)
+                    })
+
+
+            })
+
+            it('asserts that the the nth instance of a repeat event is auto-populated from the immediate previous instance', () => {
+                // for new event
+                let options = {
+                    "row": 2,
+                    "col": 2,
+                    "target": TargetType.NewEvent
+                }
+                cy.selectTableEntry(options)
+
+                // 'dose 1' instance 2 populated by 'dose 1' instance 1
+                // 'dose 1' instance 3 populated by 'dose 1' instance 2
+            })
 
             // it('asserts that the the nth instance of a repeat form is auto-populated from the immediate previous instance', () => {
             //     // 'enrollment' instance 2 is populated by 'enrollment' instance 1
