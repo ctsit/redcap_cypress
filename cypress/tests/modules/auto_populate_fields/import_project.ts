@@ -1,12 +1,12 @@
+import { NewInstanceConfig, InstanceType, InstanceConfig, EventConfig, NewEventConfig } from "../../../support/util";
+
 describe('Import Project', () => {
 
     const moduleName = 'Auto Populate Fields';
 
-    const InstanceType = Cypress.env('instanceType')
     const Page = Cypress.env('page');
     const Path = Cypress.env('path');
     const ProjectType = Cypress.env('projectType')
-    const TargetType = Cypress.env('targetType')
     const pid = 15;
     const recordID = 7;
 
@@ -55,14 +55,9 @@ describe('Import Project', () => {
                 // 'dose 1' being populated by last entry of 'enrollment'
 
                 // get the height from 'enrollment'
-                let options = {
-                    "row": 2,
-                    "col": 1,
-                    "target": TargetType.Instance,
-                    "instanceType": InstanceType.Last,
-                }
+                const instanceConfig = new InstanceConfig({col: 1, row: 2, instanceType: InstanceType.Last});
+                cy.selectTableEntry(instanceConfig);
 
-                cy.selectTableEntry(options)
                 let enrollmentHeight;
                 let enrollmentHeightChain = () => {
                     return cy.selectTextByLabel('Height (cm)')
@@ -79,14 +74,8 @@ describe('Import Project', () => {
 
 
                 // get the height from 'dose 1'
-                options = {
-                    "row": 2,
-                    "col": 2,
-                    "target": TargetType.Event,
-                    "instanceType": ""
-                }
-
-                cy.selectTableEntry(options);
+                const eventConfig = new EventConfig({col: 2, row: 2});
+                cy.selectTableEntry(eventConfig);
 
                 let doseHeightChain = () => {
                     return cy.selectTextByLabel('Height (cm)')
@@ -105,34 +94,18 @@ describe('Import Project', () => {
                 const newEnrollmentHeight = '1112';
 
                 // get the height from 'enrollment'
-                let options = {
-                    "row": 2,
-                    "col": 1,
-                    "target": TargetType.NewInstance
-                }
+                const newInstanceConfig = new NewInstanceConfig({row: 2, col: 1});
+                cy.selectTableEntry(newInstanceConfig);
 
-                cy.selectTableEntry(options)
                 cy.selectTextByLabel('Height (cm)')
                     .invoke('val', newEnrollmentHeight)
                     .then(() => {
                         cy.saveForm()
                     });
 
-                // enrollmentHeightChain().then(height => {
-                //     enrollmentHeight = height;
-                //     cy.leaveForm()
-                //     console.log('enrollment height for last instance', height)
-                // })
-
-
                 // get the height from 'dose 1'
-                options = {
-                    "row": 2,
-                    "col": 2,
-                    "target": TargetType.Event,
-                }
-
-                cy.selectTableEntry(options);
+                const eventConfig = new EventConfig({col:2, row: 2});
+                cy.selectTableEntry(eventConfig);
 
                 let doseHeightChain = () => {
                     return cy.selectTextByLabel('Height (cm)')
@@ -149,16 +122,9 @@ describe('Import Project', () => {
             it('asserts that the the first instance of a repeat form is auto-populated from the previous saved event/form', () => {
                 // 'visit 1' populated by last entry of 'dose 1'
 
-
                 // create entry for dose 1
-                let options = {
-                    "row": 2,
-                    "col": 2,
-                    "target": TargetType.Event,
-                }
-
-                cy.selectTableEntry(options)
-
+                let eventConfig = new EventConfig({col: 2, row: 2});
+                cy.selectTableEntry(eventConfig)
 
                 let doseHeight;
                 let doseHeightChain = () => {
@@ -175,13 +141,8 @@ describe('Import Project', () => {
                 })
 
                 // check value is in first instance of visit 1
-                options = {
-                    "row": 2,
-                    "col": 3,
-                    "target": TargetType.Event
-                }
-
-                cy.selectTableEntry(options)
+                let eventConfig2 = new EventConfig({col: 3, row: 2});
+                cy.selectTableEntry(eventConfig2);
 
                 cy.selectTextByLabel('Height (cm)')
                     .invoke('val')
@@ -194,12 +155,8 @@ describe('Import Project', () => {
 
             it('asserts that the the nth instance of a repeat event is auto-populated from the immediate previous instance', () => {
                 // for new event
-                let options = {
-                    "row": 2,
-                    "col": 2,
-                    "target": TargetType.NewEvent
-                }
-                cy.selectTableEntry(options)
+                let eventConfig = new NewEventConfig({col: 2, row: 2})
+                cy.selectTableEntry(eventConfig)
 
                 // 'dose 1' instance 2 populated by 'dose 1' instance 1
                 // 'dose 1' instance 3 populated by 'dose 1' instance 2

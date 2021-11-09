@@ -1,10 +1,7 @@
 import * as util from "./util";
-const InstanceType = Cypress.env('instanceType')
-const TargetType = Cypress.env('targetType')
 
 // Commands in this file are CRUCIAL and are an embedded part of the REDCap Cypress Framework.
 // They are very stable and do not change often, if ever
-
 Cypress.Commands.add('uiLogin', (username, password) => {
     cy.visit("")
     cy.get('#username').type(username)
@@ -251,62 +248,8 @@ Cypress.Commands.add('configureModule', (moduleName, settings) => {
     cy.get('#external-modules-configure-modal button.save').click()
 })
 
-// TODO: Add documentation
-// {
-//     "row": 1, // n
-//     "col": 2, // n
-//     "target" : "event", // "event/newEvent/instance/newInstance"
-//     "instanceType": "first", // "first/last/nth"
-//     "instance": 3 // n
-// }
-
-const createNewEvent = (col) => {
-    cy.get(`#event_grid_table > thead th.evGridHdr:nth-child(${col + 1}) > div.divBtnAddRptEv > button`).click()
-}
-
-const getTableEntry = (row, col) => {
-    return cy.get(`#event_grid_table tbody > tr:nth-child(${row}) > td:nth-child(${col + 1})`)
-}
-
-const getEventEntry = (row, col) => {
-    return getTableEntry(row, col).children('a')
-}
-
-Cypress.Commands.add('selectTableEntry', (options) => {
-    const { row, col, target, instance, instanceType } = options;
-    if (target === TargetType.NewEvent) {
-        createNewEvent(col);
-        getEventEntry(row, col + 1).click()
-
-    } else if (target === TargetType.Event || target === TargetType.Instance || target === TargetType.NewInstance) {
-        let tableEntry = getTableEntry(row, col)
-        switch (target) {
-            case TargetType.Event:
-                tableEntry.children('a').click();
-                break;
-            case TargetType.Instance:
-                tableEntry.children('a').click();
-                switch (instanceType) {
-                    case InstanceType.Nth:
-                        cy.get(`#instancesTablePopupSub td:contains(${instance})+ td > a`).click()
-                        break;
-                    case InstanceType.First:
-                        cy.get('#instancesTablePopupSub tr:nth-child(2) td > a').click();
-                        break;
-                    case InstanceType.Last:
-                        cy.get('#instancesTablePopupSub tr:nth-last-child(2) td > a').click();
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case TargetType.NewInstance:
-                tableEntry.children('button').click();
-                break;
-            default:
-                break;
-        }
-    }
+Cypress.Commands.add('selectTableEntry', (config: util.Configurable) => {
+    config.selectTargetCell()
 })
 
 // Search for and enable an external module
