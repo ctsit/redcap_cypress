@@ -23,14 +23,14 @@ interface Configurable {
     col: number
     row: number
 
-    selectTargetCell() : void
+    selectTargetCell(): void
 }
 
 class EventConfig implements Configurable {
     col: number
     row: number
 
-    constructor({col, row} : {col: number, row: number}) {
+    constructor({ col, row }: { col: number, row: number }) {
         this.col = col;
         this.row = row;
     }
@@ -47,9 +47,9 @@ class InstanceConfig implements Configurable {
     instance: number
     instanceType: InstanceType
 
-    constructor({col, row, instanceType, instance}: {col: number, row: number, instanceType: InstanceType, instance?: number}) {
+    constructor({ col, row, instanceType, instance }: { col: number, row: number, instanceType: InstanceType, instance?: number }) {
         this.col = col;
-        this. instance = instance;
+        this.instance = instance;
         this.row = row;
         this.instanceType = instanceType;
     }
@@ -57,12 +57,20 @@ class InstanceConfig implements Configurable {
     selectTargetCell() {
         const tableEntry = getTableEntry(this.col, this.row);
         tableEntry.children('a').click();
-        switch(this.instanceType) {
+        switch (this.instanceType) {
             case InstanceType.Nth:
                 cy.get(`#instancesTablePopupSub td:contains(${this.instance})+ td > a`).click()
                 break;
             case InstanceType.First:
-                cy.get('#instancesTablePopupSub tr:nth-child(2) td > a').click();
+                // The popup only shows if there is more than one instance. 
+                // If there is more than one instance, we select the instance via the popup.
+                // Otherwise we do not need to select via the popup.
+                cy.get('body')
+                    .then(($body) => {
+                        if ($body.find('#instancesTablePopupSub tr:nth-child(2) td > a').length) {
+                            cy.get('#instancesTablePopupSub tr:nth-child(2) td > a').click();
+                        }
+                    })
                 break;
             case InstanceType.Last:
                 cy.get('#instancesTablePopupSub tr:nth-last-child(2) td > a').click();
@@ -70,7 +78,7 @@ class InstanceConfig implements Configurable {
             default:
                 break;
         }
-        
+
     }
 }
 
@@ -78,7 +86,7 @@ class NewEventConfig implements Configurable {
     col: number
     row: number
 
-    constructor({col, row}: {col: number, row: number}) {
+    constructor({ col, row }: { col: number, row: number }) {
         this.col = col;
         this.row = row;
     }
@@ -94,7 +102,7 @@ class NewInstanceConfig implements Configurable {
     col: number
     row: number
 
-    constructor({col, row}: {col: number, row: number}) {
+    constructor({ col, row }: { col: number, row: number }) {
         this.col = col;
         this.row = row;
     }
@@ -107,7 +115,7 @@ class NewInstanceConfig implements Configurable {
 
 
 export {
-    baseUrl, 
+    baseUrl,
     camelToSnakeCase,
     Configurable,
     EventConfig,
