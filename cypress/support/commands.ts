@@ -33,17 +33,17 @@ Cypress.Commands.add('visitVersion', (options) => {
     let version = Cypress.env('redcap_version')
 
     // cy.maintainSession().then(() => {
-        if ('params' in options) {
-            cy.visit('/redcap_v' + version + '/' + options['page'] + '?' + options['params'])
-        } else {
-            cy.visit('/redcap_v' + version + '/' + options['page'])
-        }
+    if ('params' in options) {
+        cy.visit('/redcap_v' + version + '/' + options['page'] + '?' + options['params'])
+    } else {
+        cy.visit('/redcap_v' + version + '/' + options['page'])
+    }
     // })
 })
 
 Cypress.Commands.add('visitBase', (options) => {
     // cy.maintainSession().then(() => {
-        if ('url' in options) cy.visit(options['url'])
+    if ('url' in options) cy.visit(options['url'])
     // })
 })
 
@@ -100,23 +100,23 @@ Cypress.Commands.add('maintainSession', () => {
     // console.log('current: ' + user_type)
 
     // if (user_type === previous_user_type) {
-        cy.getCookies()
-            .should((cookies) => {
+    cy.getCookies()
+        .should((cookies) => {
 
-                //In most cases, we'll have cookies to preserve to maintain a login
-                if (cookies.length > 0) {
-                    console.log('Cookie Login')
-                    cookies.map(cookie => Cypress.Cookies.preserveOnce(cookie['name']))
+            //In most cases, we'll have cookies to preserve to maintain a login
+            if (cookies.length > 0) {
+                console.log('Cookie Login')
+                cookies.map(cookie => Cypress.Cookies.preserveOnce(cookie['name']))
 
-                    //But, if we don't, then let's simply re-login, right?    
-                } else {
-                    console.log('Regular Login')
-                    // cy.login({ username: user, password: pass })
-                }
+                //But, if we don't, then let's simply re-login, right?    
+            } else {
+                console.log('Regular Login')
+                // cy.login({ username: user, password: pass })
+            }
 
-            })
+        })
 
-        //If user type has changed, let's clear cookies and login again
+    //If user type has changed, let's clear cookies and login again
     // } else {
     //     //Ensure we logout when a user changes
     //     cy.visit('/redcap_v' + Cypress.env('redcap_version') + '/index.php?logout=1')
@@ -227,6 +227,11 @@ Cypress.Commands.add('getFieldValueByLabel', ($name, $type, $prefix = '', $suffi
                 return $a[0]
             })
         })
+})
+
+Cypress.Commands.add('deleteForm', () => {
+    cy.get('#__DELETEBUTTONS__-div button.btn-defaultrc').contains('Delete data for THIS FORM only').click()
+    cy.get('div.ui-dialog.ui-front .ui-dialog-buttonpane.ui-widget-content.ui-helper-clearfix > div > button:contains("Delete"):visible').click()
 })
 
 Cypress.Commands.add('leaveForm', () => {

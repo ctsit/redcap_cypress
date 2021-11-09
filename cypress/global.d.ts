@@ -7,12 +7,13 @@ declare global {
             createCdiscProject(projectName: string, projectType: string, projectFilePath: string, pid: number): Chainable
             configureModule(module: string): Chainable
             enableModule(module: string, projectLevel: boolean): Chainable
+            deleteForm(): Chainable
             getEnabledModuleTableEntry(module: string): Chainable<Element>
             getDisabledModuleTableEntry(module: string): Chainable<Element>
             getFieldValueByLabel(name: string, fieldType: string, elementClass?: string, additionalIdentifier?: string): Chainable<Element>
             findOnlineDesignerField(fieldName: string): Chainable<Element>
             login(username: string, password: string): Chainable
-            leaveForm(): void
+            leaveForm(): Chainable
             maintainSession(): Chainable
             mysqlDb(value: string, pid: string, options?: boolean): Chainable
             mysqlQuery(query: string): Chainable
