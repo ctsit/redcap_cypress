@@ -28,6 +28,10 @@ Cypress.Commands.add('login', (options) => {
     })
 })
 
+Cypress.Commands.add('logout', () => {
+    cy.visit('/redcap_v' + Cypress.env('redcap_version') + '/index.php?logout=1');
+})
+
 Cypress.Commands.add('visitVersion', (options) => {
 
     let version = Cypress.env('redcap_version')
@@ -255,6 +259,11 @@ Cypress.Commands.add('configureModule', (moduleName, settings) => {
 
 Cypress.Commands.add('selectTableEntry', (config: util.Configurable) => {
     config.selectTargetCell()
+})
+
+Cypress.Commands.add('disableGlobalModule', moduleName => {
+    cy.get(`#external-modules-enabled tr[data-module=${util.camelToSnakeCase(moduleName)}] button.external-modules-disable-button`).click()
+    cy.get("#external-modules-disable-button-confirmed").click();
 })
 
 // Search for and enable an external module
@@ -504,11 +513,11 @@ Cypress.Commands.add('num_projects_excluding_archived', () => {
     return cy.mysqlQuery("SELECT count(*) FROM redcap_projects WHERE status != 3;")
 })
 
-Cypress.Commands.add('delete_project', (pid) => {
+Cypress.Commands.add('deleteProject', (pid) => {
     cy.visitVersion({ page: 'ProjectSetup/other_functionality.php', params: `pid=${pid}` })
     cy.get('button').contains('Delete the project').click()
     cy.get('input#delete_project_confirm').type('DELETE').then((input) => {
-        cy.get(input.toString()).closest('div[role="dialog"]').find('button').contains('Delete the project').click()
+        cy.get('div[role="dialog"]:visible button:contains("Delete the project")').click()
         cy.get('button').contains('Yes, delete the project').click()
         cy.get('span#ui-id-3').closest('div[role="dialog"]').find('button').contains('Close').click({ force: true })
     })
