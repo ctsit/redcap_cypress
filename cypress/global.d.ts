@@ -35,7 +35,7 @@ declare global {
             selectFieldChoices(labelName: string): Chainable<Element>
             visitBase(obj?: object): Chainable<void>
             visitVersion(obj: object): Chainable<void>
-            uiLogin(username: string, password: string): Chainable
+            uiLogin(userType: string): Chainable
             uploadFile(filePath: string, fileType: string, field: string): Chainable
             window(options?: Partial<Loggable & Timeoutable>): Chainable<Window>
         }

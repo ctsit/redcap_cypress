@@ -12,15 +12,14 @@ describe('Project setup', () => {
 
 
     after(() => {
-        cy.visitVersion({ page: Page.ExternalModules })
+        cy.visitVersion({ page: Page.ExternalModules });
         cy.disableGlobalModule(moduleName);
         cy.logout();
     })
 
     before(() => {
-        // cy.set_user_type('admin')
-        cy.uiLogin("test_admin", "Testing123")
-        cy.visitVersion({ page: Page.ExternalModules })
+        cy.uiLogin("admin");
+        cy.visitVersion({ page: Page.ExternalModules });
         cy.searchAndEnableGlobalModule(moduleName);
     })
 

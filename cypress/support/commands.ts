@@ -2,10 +2,12 @@ import * as util from "./util";
 
 // Commands in this file are CRUCIAL and are an embedded part of the REDCap Cypress Framework.
 // They are very stable and do not change often, if ever
-Cypress.Commands.add('uiLogin', (username, password) => {
+// Cypress.Commands.add('uiLogin', (username, password) => {
+Cypress.Commands.add('uiLogin', (userType) => {
     cy.visit("")
-    cy.get('#username').type(username)
-    cy.get('#password').type(password)
+    const users = Cypress.env('users')[userType];
+    cy.get('#username').type(users.user)
+    cy.get('#password').type(users.pass)
     cy.get('#login_btn').click()
 })
 
