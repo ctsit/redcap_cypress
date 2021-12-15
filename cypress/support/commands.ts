@@ -1,4 +1,5 @@
 import * as util from "./util";
+import 'cypress-file-upload';
 
 // Commands in this file are CRUCIAL and are an embedded part of the REDCap Cypress Framework.
 // They are very stable and do not change often, if ever
@@ -253,7 +254,20 @@ Cypress.Commands.add('configureModule', (moduleName, settings) => {
     // TODO: add support for different setting types
     for (const property in settings) {
         if (settings[property]) {
-            cy.get(`tr[field=${property}] input[type='checkbox']`).click()
+            const fieldChain = cy.get(`tr[field=${property}] input`);
+            fieldChain.then((field) => {
+                const type = field.attr('type');
+                switch(type) {
+                    case 'file':
+                        const config = settings[property];
+                        // TODO(mbentz-uf): Add a type for module config
+                        cy.uploadModuleFile(config.fileName, config.moduleDir, 'text/csv', `[name="${property}"`);
+                        break;
+                    case 'checkbox':
+                        $(field).trigger('click');
+                        break;
+                }
+            });
         }
     }
     cy.get('#external-modules-configure-modal button.save').click()
@@ -386,31 +400,27 @@ Cypress.Commands.add('get_project_table_row_col', (row = '1', col = '0') => {
     cy.get('table#table-proj_table tr:nth-child(' + row + ') td:nth-child(' + col + ')')
 })
 
-Cypress.Commands.add('configureModule', (moduleName, settings) => {
-    cy.get(`#external-modules-enabled tr[data-module=${util.camelToSnakeCase(moduleName)}] button.external-modules-configure-button`).click()
-    // TODO: add support for different setting types
-    for (const property in settings) {
-        if (settings[property]) {
-            const fieldChain = cy.get(`tr[field=${property}] input`);
-            fieldChain.then((field) => {
-                const type = field.attr('type');
-                switch (type) {
-                    case 'file':
-                        const filePath = settings[property] as string;
-                        cy.readFile(filePath).then(function (fileContent) {
-                            cy.get('[name="file_upload"]').attachFile({ fileContent, filePath, mimeType: 'text/csv' })
-                        });
-                        break;
-                    case 'checkbox':
-                        $(field).trigger('click');
-                        break;
-                }
-            });
-        }
-    }
-    cy.get('#external-modules-configure-modal button.save').click()
+Cypress.Commands.add('uploadFile', (fileName, fileType = ' ', selector) => {
+    cy.get(selector).then(subject => {
+        cy.fixture(fileName, 'base64')
+            .then(Cypress.Blob.base64StringToBlob)
+            .then(blob => {
+                const el = subject[0]
+                const testFile = new File([blob], fileName, { type: fileType })
+                const dataTransfer = new DataTransfer()
+                dataTransfer.items.add(testFile)
+                el.files = dataTransfer.files
+            })
+    })
 })
 
+Cypress.Commands.add('uploadModuleFile', (fileName, moduleDir, mimeType = ' ', selector) => {
+    const moduleResourcesPrefix = `cypress/tests/modules/${moduleDir}/.resources`; 
+
+    cy.readFile(`${moduleResourcesPrefix}/${fileName}`).then(function (fileContent) {
+        cy.get(selector).attachFile({ fileContent, filePath: `${moduleResourcesPrefix}/${fileName}`, mimeType: mimeType })
+    });
+})
 
 Cypress.Commands.add('upload_data_dictionary', (fixture_file, pid, date_format = "DMY") => {
 
@@ -487,6 +497,25 @@ Cypress.Commands.add('createCdiscProject', (project_name, project_type, cdisc_fi
     cy.get('select#purpose').select(project_type)
     cy.get('input#project_template_radio2').click()
     cy.uploadFile(cdisc_file, 'xml', 'input[name="odm"]')
+    cy.get('button').contains('Create Project').click().then(() => {
+        let pid = null;
+        cy.url().should((url) => {
+            return url
+        })
+    })
+})
+
+Cypress.Commands.add('createProject', (projectName, projectType, fileName, moduleDir, projectId) => {
+    //Set the Desired Project ID
+    const desired_pid = 'MAGIC_AUTO_NUMBER/' + projectId;
+    cy.mysqlDb('set_auto_increment_value', desired_pid)
+
+    //Run through the steps to import the project via CDISC ODM
+    cy.visitBase({ url: 'index.php?action=create' })
+    cy.get('input#app_title').type(projectName)
+    cy.get('select#purpose').select(projectType)
+    cy.get('input#project_template_radio2').click()
+    cy.uploadModuleFile(fileName, moduleDir, 'xml', 'input[name="odm"]')
     cy.get('button').contains('Create Project').click().then(() => {
         let pid = null;
         cy.url().should((url) => {

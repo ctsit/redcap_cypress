@@ -4,8 +4,9 @@ declare global {
         interface Chainable {
             addApiUserToProject(user: string, pid: number): Chainable
             baseDbSeed(): Chainable
-            createCdiscProject(projectName: string, projectType: string, projectFilePath: string, pid: number): Chainable
             configureModule(module: string, options?: object): Chainable
+            createCdiscProject(projectName: string, projectType: string, projectFilePath: string, pid: number): Chainable
+            createProject(projectName: string, projectType: string, fileName: string, moduleDir: string, pid: number): Chainable
             disableGlobalModule(module: string): Chainable
             enableModule(module: string, projectLevel: boolean): Chainable
             deleteForm(): Chainable
@@ -37,6 +38,7 @@ declare global {
             visitVersion(obj: object): Chainable<void>
             uiLogin(userType: string): Chainable
             uploadFile(filePath: string, fileType: string, field: string): Chainable
+            uploadModuleFile(fileName: string, moduleDir: string, mimeType: string, field: string): Chainable
             window(options?: Partial<Loggable & Timeoutable>): Chainable<Window>
         }
     }
