@@ -386,18 +386,29 @@ Cypress.Commands.add('get_project_table_row_col', (row = '1', col = '0') => {
     cy.get('table#table-proj_table tr:nth-child(' + row + ') td:nth-child(' + col + ')')
 })
 
-Cypress.Commands.add('uploadFile', (fileName, fileType = ' ', selector) => {
-    cy.get(selector).then(subject => {
-        cy.fixture(fileName, 'base64')
-            .then(Cypress.Blob.base64StringToBlob)
-            .then(blob => {
-                const el = subject[0]
-                const testFile = new File([blob], fileName, { type: fileType })
-                const dataTransfer = new DataTransfer()
-                dataTransfer.items.add(testFile)
-                el.files = dataTransfer.files
-            })
-    })
+Cypress.Commands.add('configureModule', (moduleName, settings) => {
+    cy.get(`#external-modules-enabled tr[data-module=${util.camelToSnakeCase(moduleName)}] button.external-modules-configure-button`).click()
+    // TODO: add support for different setting types
+    for (const property in settings) {
+        if (settings[property]) {
+            const fieldChain = cy.get(`tr[field=${property}] input`);
+            fieldChain.then((field) => {
+                const type = field.attr('type');
+                switch (type) {
+                    case 'file':
+                        const filePath = settings[property] as string;
+                        cy.readFile(filePath).then(function (fileContent) {
+                            cy.get('[name="file_upload"]').attachFile({ fileContent, filePath, mimeType: 'text/csv' })
+                        });
+                        break;
+                    case 'checkbox':
+                        $(field).trigger('click');
+                        break;
+                }
+            });
+        }
+    }
+    cy.get('#external-modules-configure-modal button.save').click()
 })
 
 
