@@ -17,8 +17,11 @@ import './commands'
 
 
 before(() => {
-    //Create the initial database structure
-    cy.baseDbSeed()
+    // Create the initial database structure
+    const initializingREDCap = Cypress.env('init_redcap');
+    if (!initializingREDCap) {
+      cy.baseDbSeed()
+    }
 })
 
 beforeEach(() => {  
