@@ -15,8 +15,8 @@ describe('Finish REDCap installation', () => {
     const loginUrl = `${Cypress.config().baseUrl}/index.php`;
 
     cy.intercept('GET', loginUrl).as('loginPage');
-    cy.visit(loginUrl);
-    cy.wait('@loginPage', {requestTimeout: 90000}).then((interception) => {
+    cy.visit(loginUrl, {timeout: 90000});
+    cy.wait('@loginPage').then((interception) => {
       expect(interception.response.statusCode).to.eq(200);
     });
   });
