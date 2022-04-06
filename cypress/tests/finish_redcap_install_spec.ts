@@ -16,7 +16,7 @@ describe('Finish REDCap installation', () => {
 
     cy.intercept('GET', loginUrl).as('loginPage');
     cy.visit(loginUrl);
-    cy.wait('@loginPage', {requestTimeout: 300000}).then((interception) => {
+    cy.wait('@loginPage', {requestTimeout: 90000}).then((interception) => {
       expect(interception.response.statusCode).to.eq(200);
     });
   });
