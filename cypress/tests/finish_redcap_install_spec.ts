@@ -4,7 +4,7 @@ describe('Finish REDCap installation', () => {
   before(() => {
     cy.visit(Cypress.config().baseUrl);
     cy.get('div.form-check label.form-check-label').contains("Use a local copy").click();
-    cy.uploadFile(`redcap${redcapVersion}.zip`, "zip", 'input[name=installer-upload]');
+    cy.uploadFile(`redcap-${redcapVersion}.zip`, "zip", 'input[name=installer-upload]');
     cy.get('div.form-check label.form-check-label').contains("Prepopulate").click();
     cy.get('input.supplement-option.form-control').type("admin@ufl.edu");
     cy.get('button[type="submit"]').click();
